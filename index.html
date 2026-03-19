@@ -11,18 +11,20 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- SortableJS para Drag and Drop -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <!-- Chart.js para Gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        primary: '#2563eb',
+                        primary: '#4f46e5',
                         secondary: '#475569',
-                        success: '#16a34a',
-                        warning: '#ea580c',
+                        success: '#059669',
+                        warning: '#d97706',
                         danger: '#dc2626',
-                        background: '#f8fafc',
+                        background: '#f1f5f9',
                         surface: '#ffffff'
                     },
                     fontFamily: {
@@ -33,234 +35,567 @@
         }
     </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        :root {
+            --primary: #4f46e5;
+            --primary-light: #6366f1;
+            --success: #059669;
+            --warning: #d97706;
+            --danger: #dc2626;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --border: #e2e8f0;
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --bottom-nav-height: 64px;
+            --card-bg: #ffffff;
+            --modal-bg: #ffffff;
+            --input-bg: #ffffff;
+            --tag-bg: #f1f5f9;
+            --tag-text: #475569;
+            --header-bg: rgba(255,255,255,0.95);
+            --day-header-bg: #f8fafc;
+        }
+
+        [data-theme="dark"] {
+            --bg: #0a0f1e;
+            --surface: #111827;
+            --border: #1f2937;
+            --text: #f3f4f6;
+            --text-muted: #9ca3af;
+            --card-bg: #111827;
+            --modal-bg: #111827;
+            --input-bg: #0a0f1e;
+            --tag-bg: #1f2937;
+            --tag-text: #d1d5db;
+            --header-bg: rgba(10,15,30,0.97);
+            --day-header-bg: #0a0f1e;
+        }
+
+        [data-theme="dark"] body { background-color: var(--bg); color: var(--text); }
+        [data-theme="dark"] .bg-white { background-color: var(--surface) !important; }
+        [data-theme="dark"] .bg-slate-50,
+        [data-theme="dark"] .bg-slate-50\/80 { background-color: var(--bg) !important; }
+        [data-theme="dark"] .bg-slate-100 { background-color: #334155 !important; }
+        [data-theme="dark"] .bg-surface { background-color: var(--surface) !important; }
+        [data-theme="dark"] .border-slate-100,
+        [data-theme="dark"] .border-slate-200 { border-color: var(--border) !important; }
+        [data-theme="dark"] .text-slate-800,
+        [data-theme="dark"] .text-slate-900 { color: #f1f5f9 !important; }
+        [data-theme="dark"] .text-slate-700 { color: #e2e8f0 !important; }
+        [data-theme="dark"] .text-slate-600 { color: #cbd5e1 !important; }
+        [data-theme="dark"] .text-slate-500 { color: #94a3b8 !important; }
+        [data-theme="dark"] .text-slate-400 { color: #64748b !important; }
+        [data-theme="dark"] .bg-gradient-to-r.from-violet-50 { background: #1e1b4b !important; }
+        [data-theme="dark"] header,
+        [data-theme="dark"] nav { background: var(--header-bg) !important; border-color: var(--border) !important; }
+        [data-theme="dark"] .bottom-nav { background: rgba(15,23,42,0.97) !important; border-color: var(--border) !important; }
+        [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+            background-color: var(--input-bg) !important;
+            border-color: var(--border) !important;
+            color: var(--text) !important;
+        }
+        [data-theme="dark"] .task-tag-pill { background-color: var(--tag-bg) !important; }
+        [data-theme="dark"] #toast { background: #0f172a; border: 1px solid var(--border); }
+
+        * { -webkit-tap-highlight-color: transparent; }
 
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f8fafc;
+            background-color: var(--bg);
+            padding-bottom: var(--bottom-nav-height);
         }
 
-        .sortable-ghost {
-            opacity: 0.4;
-            background-color: #e2e8f0;
-            border: 2px dashed #94a3b8;
+        @media (min-width: 768px) {
+            body { padding-bottom: 0; }
         }
 
-        .sortable-drag {
-            cursor: grabbing !important;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
-
-        .task-card:hover .task-actions {
-            opacity: 1;
-        }
-
-        .task-card.completed {
-            opacity: 0.6;
-        }
-
-        .task-card.completed .task-title {
-            text-decoration: line-through;
-        }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-
-        /* Ocultar barra de rolagem no calendário se não houver hover, mantendo usabilidade */
-        .calendar-scroll {
-            scrollbar-width: thin;
-        }
-
-        /* Toggle Switch para Auto-sync */
-        .toggle-switch {
+        /* ── Animated gradient background ── */
+        .hero-gradient {
+            background: linear-gradient(135deg, #4f46e5 0%, #6366f1 30%, #7c3aed 60%, #8b5cf6 100%);
+            background-size: 300% 300%;
+            animation: gradientShift 10s ease infinite;
             position: relative;
-            width: 36px;
-            height: 20px;
-            background: #cbd5e1;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: background 0.3s;
+            overflow: hidden;
         }
-        .toggle-switch.active {
-            background: #16a34a;
-        }
-        .toggle-switch::after {
+        .hero-gradient::before {
             content: '';
             position: absolute;
-            top: 2px;
-            left: 2px;
-            width: 16px;
-            height: 16px;
-            background: white;
-            border-radius: 50%;
-            transition: transform 0.3s;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(255,255,255,0.08) 0%, transparent 40%);
+            pointer-events: none;
         }
-        .toggle-switch.active::after {
-            transform: translateX(16px);
+        @keyframes gradientShift {
+            0%,100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
         }
 
-        /* Sync status spinner */
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        /* ── Card hover lift ── */
+        .task-card {
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s ease, border-color 0.2s ease;
         }
-        .sync-spinning {
-            animation: spin 1s linear infinite;
+        .task-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px -8px rgba(79,70,229,0.15), 0 4px 12px -4px rgba(0,0,0,0.08);
+            border-color: #c7d2fe;
+        }
+        .task-card:active {
+            transform: scale(0.98);
+        }
+        .task-card .task-actions { opacity: 0; transition: opacity 0.2s ease; }
+        .task-card:hover .task-actions { opacity: 1; }
+        @media (max-width: 640px) {
+            .task-card .task-actions { opacity: 1; }
+        }
+        .task-card.completed { opacity: 0.65; }
+        .task-card.completed .task-title { text-decoration: line-through; }
+        
+        /* Task card left accent border on completion */
+        .task-card.completed {
+            border-left: 3px solid var(--success);
+        }
+        .task-card:not(.completed) {
+            border-left: 3px solid transparent;
+        }
+
+        /* ── Sortable drag ── */
+        .sortable-ghost { opacity: 0.4; background: #e0e7ff; border: 2px dashed #6366f1; border-radius: 12px; transform: rotate(2deg); }
+        .sortable-drag { cursor: grabbing !important; box-shadow: 0 25px 50px rgba(79,70,229,0.35); transform: scale(1.02) rotate(1deg); }
+
+        /* ── Custom Scrollbar ── */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .calendar-scroll { scrollbar-width: thin; }
+
+        /* ── Toggle Switch ── */
+        .toggle-switch {
+            position: relative; width: 36px; height: 20px;
+            background: #cbd5e1; border-radius: 10px; cursor: pointer;
+            transition: background 0.3s;
+        }
+        .toggle-switch.active { background: var(--success); }
+        .toggle-switch::after {
+            content:''; position:absolute; top:2px; left:2px;
+            width:16px; height:16px; background:white; border-radius:50%;
+            transition: transform 0.3s; box-shadow:0 1px 3px rgba(0,0,0,0.2);
+        }
+        .toggle-switch.active::after { transform:translateX(16px); }
+
+        /* ── Spin ── */
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .sync-spinning { animation: spin 1s linear infinite; }
+
+        /* ── Fade-in for cards ── */
+        @keyframes fadeInUp {
+            from { opacity:0; transform:translateY(12px); }
+            to   { opacity:1; transform:translateY(0); }
+        }
+        .fade-in-up { animation: fadeInUp 0.3s ease forwards; }
+
+        /* ── Progress bar shimmer ── */
+        @keyframes shimmer {
+            0%   { background-position: -200% center; }
+            100% { background-position: 200% center; }
+        }
+        .progress-shimmer {
+            background: linear-gradient(90deg, var(--primary) 25%, #6366f1 50%, var(--primary) 75%);
+            background-size: 200% auto;
+            animation: shimmer 2s linear infinite;
+        }
+        
+        /* ── Enhanced progress bar ── */
+        .progress-bar-container {
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(4px);
+        }
+        .progress-bar-fill {
+            background: rgba(255,255,255,0.95);
+            box-shadow: 0 0 12px rgba(255,255,255,0.4);
+        }
+
+        /* ── Bottom Navigation (mobile) ── */
+        .bottom-nav {
+            display: flex;
+            position: fixed; bottom:0; left:0; right:0;
+            height: var(--bottom-nav-height);
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(16px);
+            border-top: 1px solid var(--border);
+            z-index: 40;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+        }
+        @media (min-width: 768px) { .bottom-nav { display: none; } }
+        .bottom-nav-btn {
+            flex: 1; display:flex; flex-direction:column; align-items:center;
+            justify-content:center; gap:2px; font-size:10px; font-weight:600;
+            color: var(--text-muted); transition: color 0.2s;
+            border: none; background: transparent; cursor: pointer;
+            padding: 8px 4px;
+        }
+        .bottom-nav-btn.active { color: var(--primary); }
+        .bottom-nav-btn svg { width:22px; height:22px; }
+        .bottom-nav-fab {
+            width: 52px; height: 52px;
+            background: linear-gradient(135deg, var(--primary), #7c3aed);
+            border-radius: 50%;
+            display:flex; align-items:center; justify-content:center;
+            box-shadow: 0 4px 16px rgba(79,70,229,0.45);
+            position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+            cursor: pointer; border: 3px solid white;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .bottom-nav-fab:active { transform: translateX(-50%) scale(0.93); }
+        .bottom-nav-fab:hover { transform: translateX(-50%) scale(1.05); }
+        .bottom-nav-spacer { flex:1; }
+        
+        /* Bottom nav active indicator */
+        .bottom-nav-btn.active::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 24px;
+            height: 3px;
+            background: var(--primary);
+            border-radius: 0 0 3px 3px;
+        }
+        .bottom-nav-btn {
+            position: relative;
+        }
+
+        /* ── Print ── */
+        @media print {
+            body * { visibility: hidden; }
+            .print-area, .print-area * { visibility: visible; }
+            .print-area { position: absolute; left: 0; top: 0; width: 100%; }
+            .bottom-nav { display: none !important; }
+        }
+
+        /* ── Chat bubbles ── */
+        .chat-bubble-user {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white; border-radius: 18px 18px 4px 18px;
+            padding: 10px 16px; max-width: 85%; align-self: flex-end;
+            font-size: 0.875rem; line-height: 1.5;
+        }
+        .chat-bubble-ai {
+            background: #f1f5f9; color: #1e293b;
+            border-radius: 18px 18px 18px 4px;
+            padding: 10px 16px; max-width: 85%; align-self: flex-start;
+            font-size: 0.875rem; line-height: 1.5;
+        }
+
+        /* ── Stat cards pulse on update ── */
+        @keyframes pulse-once {
+            0%,100% { transform: scale(1); }
+            50%      { transform: scale(1.04); }
+        }
+        .pulse-once { animation: pulse-once 0.4s ease; }
+
+        /* ── Day block header ── */
+        .day-header-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--primary);
+            display: inline-block; margin-right: 8px;
+            box-shadow: 0 0 8px rgba(79,70,229,0.4);
+        }
+        
+        .day-header-custom {
+            background: linear-gradient(to right, rgba(79,70,229,0.06), transparent);
+            padding: 8px 12px;
+            border-radius: 8px;
+            border-left: 3px solid var(--primary);
+        }
+        
+        .day-header-custom:hover {
+            background: linear-gradient(to right, rgba(79,70,229,0.1), transparent);
+        }
+
+        /* Tag pill colors */
+        .tag-pill {
+            display:inline-block; padding: 2px 8px; border-radius: 999px;
+            font-size:10px; font-weight:600; letter-spacing:0.02em;
+        }
+        
+        /* ── Enhanced Empty State ── */
+        .empty-state-container {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border: 2px dashed #cbd5e1;
+            border-radius: 16px;
+        }
+        [data-theme="dark"] .empty-state-container {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border-color: #334155;
+        }
+        .empty-state-icon {
+            background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+            border: 1px solid #c7d2fe;
+        }
+        [data-theme="dark"] .empty-state-icon {
+            background: linear-gradient(135deg, #312e81 0%, #1e1b4b 100%);
+            border-color: #4f46e5;
+        }
+        
+        /* ── Subtle background pattern ── */
+        body {
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(79,70,229,0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(124,58,237,0.03) 0%, transparent 50%);
+        }
+        [data-theme="dark"] body {
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(79,70,229,0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(124,58,237,0.05) 0%, transparent 50%);
+        }
+        
+        /* ── Stat card enhancements ── */
+        .stat-card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+
+        .chat-bubble-ai {
+            background: #f1f5f9;
+            color: #1e293b;
+            border-radius: 18px 18px 18px 4px;
+            padding: 10px 16px;
+            max-width: 85%;
+            align-self: flex-start;
+            font-size: 0.875rem;
+            line-height: 1.5;
         }
     </style>
 </head>
 
+
 <body class="text-slate-800 antialiased min-h-screen flex flex-col">
 
-    <!-- Navbar -->
-    <nav class="bg-surface border-b border-slate-200 sticky top-0 z-10 shadow-sm">
+    <!-- Navbar (Desktop) -->
+    <nav class="bg-white/95 backdrop-blur-lg border-b border-slate-200/80 sticky top-0 z-30 shadow-sm">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-2">
-                <i data-lucide="calendar-check" class="text-primary w-6 h-6"></i>
-                <h1 class="font-bold text-xl tracking-tight text-slate-900">Planeamento <span
-                        class="text-primary">Estratégico</span></h1>
-                <!-- Sync Status Indicator -->
-                <span id="sync-status" class="ml-2 flex items-center gap-1 text-xs font-medium text-slate-400" title="Status da sincronização">
-                    <i id="sync-icon" data-lucide="cloud-off" class="w-4 h-4"></i>
-                    <span id="sync-text" class="hidden sm:inline">Offline</span>
-                </span>
-            </div>
-            <div class="flex items-center gap-1 sm:gap-2">
-                <!-- Save Local -->
-                <button onclick="handleSaveLocal()" title="Salvar localmente"
-                    class="text-sm font-medium text-slate-600 hover:text-primary transition-colors flex items-center gap-1 px-2 py-1.5 rounded-lg hover:bg-slate-100">
-                    <i data-lucide="hard-drive" class="w-4 h-4"></i> <span class="hidden lg:inline">Local</span>
-                </button>
-                <!-- Save Server -->
-                <button onclick="handleSaveServer()" title="Salvar no servidor"
-                    class="text-sm font-medium text-slate-600 hover:text-primary transition-colors flex items-center gap-1 px-2 py-1.5 rounded-lg hover:bg-slate-100">
-                    <i data-lucide="cloud-upload" class="w-4 h-4"></i> <span class="hidden lg:inline">Servidor</span>
-                </button>
-                <!-- Load Server -->
-                <button onclick="handleLoadServer()" title="Carregar do servidor"
-                    class="text-sm font-medium text-slate-600 hover:text-primary transition-colors flex items-center gap-1 px-2 py-1.5 rounded-lg hover:bg-slate-100">
-                    <i data-lucide="cloud-download" class="w-4 h-4"></i> <span class="hidden lg:inline">Carregar</span>
-                </button>
-                <!-- Auto-sync Toggle -->
-                <div class="flex items-center gap-1.5 px-2" title="Auto-sync com servidor">
-                    <span class="text-xs font-medium text-slate-500 hidden sm:inline">Auto</span>
-                    <div id="auto-sync-toggle" class="toggle-switch" onclick="toggleAutoSync()"></div>
+            <!-- Brand -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 hero-gradient rounded-xl flex items-center justify-center shadow-lg shadow-primary/25">
+                    <i data-lucide="calendar-check" class="text-white w-5 h-5"></i>
                 </div>
-                <div class="w-px h-6 bg-slate-200 mx-0.5"></div>
-                <!-- Import/Export -->
+                <div>
+                    <h1 class="font-bold text-lg tracking-tight text-slate-900 hidden sm:block">
+                        Planeamento <span class="text-primary">Estratégico</span>
+                    </h1>
+                    <h1 class="font-bold text-base tracking-tight text-slate-900 sm:hidden">Agenda</h1>
+                    <!-- Sync Status -->
+                    <span id="sync-status" class="hidden sm:flex items-center gap-1 text-xs font-medium text-slate-400" title="Status da sincronização">
+                        <i id="sync-icon" data-lucide="cloud-off" class="w-3.5 h-3.5"></i>
+                        <span id="sync-text">Offline</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Desktop Actions -->
+            <div class="hidden md:flex items-center gap-1.5">
                 <button onclick="openModal('importModal')" title="Importar"
-                    class="text-sm font-medium text-slate-600 hover:text-primary transition-colors flex items-center gap-1 px-2 py-1.5 rounded-lg hover:bg-slate-100">
-                    <i data-lucide="download" class="w-4 h-4"></i> <span class="hidden xl:inline">Importar</span>
+                    class="text-sm font-medium text-slate-600 hover:text-primary hover:bg-primary/5 transition-all flex items-center gap-2 px-3 py-2 rounded-lg">
+                    <i data-lucide="download" class="w-4 h-4"></i> Importar
                 </button>
                 <button onclick="prepareExport()" title="Exportar"
-                    class="text-sm font-medium text-slate-600 hover:text-primary transition-colors flex items-center gap-1 px-2 py-1.5 rounded-lg hover:bg-slate-100">
-                    <i data-lucide="upload" class="w-4 h-4"></i> <span class="hidden xl:inline">Exportar</span>
+                    class="text-sm font-medium text-slate-600 hover:text-primary hover:bg-primary/5 transition-all flex items-center gap-2 px-3 py-2 rounded-lg">
+                    <i data-lucide="upload" class="w-4 h-4"></i> Exportar
                 </button>
-                <div class="w-px h-6 bg-slate-200 mx-0.5"></div>
-                <!-- Settings -->
+                <div class="w-px h-6 bg-slate-200 mx-1"></div>
+                <button onclick="handleSaveLocal()" title="Salvar localmente"
+                    class="text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg hover:bg-slate-100">
+                    <i data-lucide="hard-drive" class="w-4 h-4"></i>
+                </button>
+                <button onclick="handleSaveServer()" title="Salvar no servidor"
+                    class="text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg hover:bg-slate-100">
+                    <i data-lucide="cloud-upload" class="w-4 h-4"></i>
+                </button>
+                <div class="flex items-center gap-2 px-2" title="Auto-sync com servidor">
+                    <span class="text-xs font-medium text-slate-500">Auto</span>
+                    <div id="auto-sync-toggle" class="toggle-switch" onclick="toggleAutoSync()"></div>
+                </div>
+                <div class="w-px h-6 bg-slate-200 mx-1"></div>
                 <button onclick="openModal('settingsModal')" title="Configurações"
-                    class="text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors p-1.5 rounded-lg hover:bg-slate-100">
-                    <i data-lucide="settings" class="w-4 h-4"></i>
+                    class="text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition-colors p-2 rounded-lg">
+                    <i data-lucide="settings" class="w-5 h-5"></i>
                 </button>
-                <!-- New Task -->
+                <button onclick="toggleDarkMode()" id="dark-mode-btn" title="Alternar Dark Mode"
+                    class="text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition-colors p-2 rounded-lg">
+                    <i data-lucide="moon" class="w-5 h-5" id="dark-mode-icon"></i>
+                </button>
                 <button onclick="openTaskModal()"
-                    class="bg-primary hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-1.5">
-                    <i data-lucide="plus" class="w-4 h-4"></i> <span class="hidden sm:inline">Novo Bloco</span>
+                    class="hero-gradient text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 flex items-center gap-2 ml-2">
+                    <i data-lucide="plus" class="w-4 h-4"></i> Novo Bloco
+                </button>
+            </div>
+
+            <!-- Mobile: only settings + sync indicator -->
+            <div class="flex md:hidden items-center gap-1">
+                <span id="sync-status-mobile" class="flex items-center gap-1 text-xs font-medium text-slate-400">
+                    <i id="sync-icon-mobile" data-lucide="cloud-off" class="w-4 h-4"></i>
+                </span>
+                <button onclick="openModal('importModal')" title="Importar"
+                    class="text-slate-500 hover:text-slate-700 transition-colors p-2 rounded-lg hover:bg-slate-100">
+                    <i data-lucide="download" class="w-4 h-4"></i>
+                </button>
+                <button onclick="toggleDarkMode()" id="dark-mode-btn-mobile" title="Dark Mode"
+                    class="text-slate-500 hover:text-slate-700 transition-colors p-2 rounded-lg hover:bg-slate-100">
+                    <i data-lucide="moon" class="w-4 h-4" id="dark-mode-icon-mobile"></i>
+                </button>
+                <button onclick="openModal('settingsModal')" title="Configurações"
+                    class="text-slate-500 hover:text-slate-700 transition-colors p-2 rounded-lg hover:bg-slate-100">
+                    <i data-lucide="settings" class="w-4 h-4"></i>
                 </button>
             </div>
         </div>
     </nav>
 
     <!-- Main Content -->
-    <main class="flex-grow max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-8">
+    <main class="flex-grow max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-5 sm:py-8 flex flex-col gap-6">
 
-        <!-- Placar de Disciplina (Análise) -->
-        <section class="bg-surface rounded-xl border border-slate-200 shadow-sm p-6">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-                <h2 class="text-lg font-semibold flex items-center gap-2 text-slate-800">
-                    <i data-lucide="bar-chart-2" class="w-5 h-5 text-secondary"></i> Painel de Execução
-                </h2>
-                <div class="flex items-center gap-4">
+        <!-- Painel de Progresso (Hero Card) -->
+        <section class="hero-gradient rounded-2xl p-5 sm:p-6 shadow-xl text-white overflow-hidden relative">
+            <!-- Decorative circles -->
+            <div class="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
+            <div class="absolute -bottom-14 -left-8 w-56 h-56 bg-white/5 rounded-full blur-3xl"></div>
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl"></div>
+            
+            <div class="relative z-10">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+                    <div class="flex items-center gap-4">
+                        <div class="w-14 h-14 bg-white/15 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20 shadow-lg">
+                            <i data-lucide="target" class="w-7 h-7"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-sm font-medium text-white/80">Painel de Execução</h2>
+                            <div class="flex items-baseline gap-2">
+                                <p id="completion-percentage" class="text-4xl font-bold tracking-tight">0%</p>
+                                <span class="text-xs text-white/60">concluído</span>
+                            </div>
+                        </div>
+                    </div>
                     <button onclick="openAnalysisModal()"
-                        class="text-sm font-medium text-primary hover:text-blue-800 transition-colors flex items-center gap-1 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">
+                        class="self-start sm:self-auto bg-white/15 hover:bg-white/25 backdrop-blur text-white border border-white/30 px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 shadow-lg hover:shadow-xl">
                         <i data-lucide="pie-chart" class="w-4 h-4"></i> Análise Detalhada
                     </button>
-                    <span id="completion-percentage" class="text-2xl font-bold text-primary">0%</span>
                 </div>
-            </div>
 
-            <div class="w-full bg-slate-100 rounded-full h-3 mb-6 overflow-hidden">
-                <div id="progress-bar" class="bg-primary h-3 rounded-full transition-all duration-500 ease-out"
-                    style="width: 0%"></div>
-            </div>
+                <!-- Progress Bar -->
+                <div class="progress-bar-container w-full rounded-full h-3 mb-5 overflow-hidden">
+                    <div id="progress-bar" class="progress-bar-fill h-3 rounded-full transition-all duration-700 ease-out" style="width: 0%"></div>
+                </div>
 
-            <div class="grid grid-cols-3 gap-4 text-center">
-                <div class="bg-slate-50 rounded-lg p-3 border border-slate-100">
-                    <p class="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1">Total</p>
-                    <p id="stat-total" class="text-xl font-semibold text-slate-800">0</p>
-                </div>
-                <div class="bg-green-50 rounded-lg p-3 border border-green-100">
-                    <p class="text-xs text-green-600 font-medium uppercase tracking-wider mb-1">Concluídas</p>
-                    <p id="stat-completed" class="text-xl font-semibold text-green-700">0</p>
-                </div>
-                <div class="bg-orange-50 rounded-lg p-3 border border-orange-100">
-                    <p class="text-xs text-orange-600 font-medium uppercase tracking-wider mb-1">Pendentes</p>
-                    <p id="stat-pending" class="text-xl font-semibold text-orange-700">0</p>
+                <!-- Stats -->
+                <div class="grid grid-cols-3 gap-3">
+                    <div class="stat-card rounded-xl p-3.5 text-center">
+                        <div class="w-8 h-8 mx-auto mb-2 bg-white/20 rounded-lg flex items-center justify-center">
+                            <i data-lucide="list-checks" class="w-4 h-4"></i>
+                        </div>
+                        <p class="text-xs font-medium text-white/70 mb-0.5">Total</p>
+                        <p id="stat-total" class="text-2xl font-bold">0</p>
+                    </div>
+                    <div class="stat-card rounded-xl p-3.5 text-center">
+                        <div class="w-8 h-8 mx-auto mb-2 bg-green-400/30 rounded-lg flex items-center justify-center">
+                            <i data-lucide="check-circle" class="w-4 h-4"></i>
+                        </div>
+                        <p class="text-xs font-medium text-white/70 mb-0.5">Feitas</p>
+                        <p id="stat-completed" class="text-2xl font-bold">0</p>
+                    </div>
+                    <div class="stat-card rounded-xl p-3.5 text-center">
+                        <div class="w-8 h-8 mx-auto mb-2 bg-amber-400/30 rounded-lg flex items-center justify-center">
+                            <i data-lucide="clock" class="w-4 h-4"></i>
+                        </div>
+                        <p class="text-xs font-medium text-white/70 mb-0.5">Restantes</p>
+                        <p id="stat-pending" class="text-2xl font-bold">0</p>
+                    </div>
                 </div>
             </div>
         </section>
 
         <!-- Controlos de Visualização -->
-        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 -mb-2">
-            <h2 class="text-xl font-bold text-slate-800">A Minha Agenda</h2>
-            <div class="flex bg-slate-200/60 p-1 rounded-lg w-max">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
+                    <i data-lucide="calendar-days" class="w-5 h-5 text-primary"></i>
+                </div>
+                <h2 class="text-xl font-bold text-slate-800">A Minha Agenda</h2>
+            </div>
+            <div class="flex bg-white border border-slate-200 p-1 rounded-xl w-max shadow-sm">
                 <button id="btn-view-list" onclick="setView('list')"
-                    class="px-4 py-1.5 text-sm font-semibold rounded-md bg-white shadow-sm text-slate-800 transition-all flex items-center gap-2">
+                    class="px-4 py-2 text-sm font-semibold rounded-lg bg-primary text-white shadow-sm transition-all flex items-center gap-2">
                     <i data-lucide="list" class="w-4 h-4"></i> Lista
                 </button>
                 <button id="btn-view-cal" onclick="setView('calendar')"
-                    class="px-4 py-1.5 text-sm font-semibold rounded-md text-slate-500 hover:text-slate-800 transition-all flex items-center gap-2">
+                    class="px-4 py-2 text-sm font-semibold rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition-all flex items-center gap-2">
                     <i data-lucide="layout-grid" class="w-4 h-4"></i> Calendário
                 </button>
             </div>
         </div>
 
         <!-- Estado Vazio (Global) -->
-        <div class="text-center py-12 text-slate-400 hidden" id="empty-state">
-            <i data-lucide="inbox" class="w-12 h-12 mx-auto mb-3 opacity-50"></i>
-            <p>Nenhuma tarefa no sistema.</p>
-            <p class="text-sm mt-1">Clique em "Importar" para colar o seu plano ou adicione manualmente.</p>
+        <div class="text-center py-16 hidden" id="empty-state">
+            <div class="empty-state-container p-10 max-w-md mx-auto">
+                <div class="empty-state-icon w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-5">
+                    <i data-lucide="clipboard-list" class="w-10 h-10 text-primary"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-700 mb-2">A sua agenda está vazia</h3>
+                <p class="text-sm text-slate-500 max-w-xs mx-auto mb-6">Clique em "Importar" para colar o seu plano ou adicione blocos manualmente para começar.</p>
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                    <button onclick="openModal('importModal')" class="px-5 py-2.5 rounded-xl text-sm font-semibold border-2 border-dashed border-slate-300 text-slate-600 hover:border-primary hover:text-primary transition-all flex items-center gap-2 justify-center">
+                        <i data-lucide="download" class="w-4 h-4"></i> Importar Plano
+                    </button>
+                    <button onclick="openTaskModal()" class="hero-gradient text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transition-all flex items-center gap-2 justify-center">
+                        <i data-lucide="plus" class="w-4 h-4"></i> Adicionar Bloco
+                    </button>
+                </div>
+            </div>
         </div>
 
         <!-- Container de Tarefas (Vista em Lista) -->
-        <section id="agenda-container" class="flex flex-col gap-8 pb-12">
+        <section id="agenda-container" class="flex flex-col gap-6 pb-4">
             <!-- Os dias serão renderizados aqui via JS -->
         </section>
 
         <!-- Container de Tarefas (Vista em Calendário) -->
-        <section id="calendar-container" class="hidden pb-12 overflow-x-auto calendar-scroll">
+        <section id="calendar-container" class="hidden pb-4 overflow-x-auto calendar-scroll">
             <div id="calendar-grid" class="flex gap-4 min-w-max items-start">
                 <!-- As colunas dos dias serão renderizadas aqui via JS -->
             </div>
         </section>
 
     </main>
+
+    <!-- ── BOTTOM NAVIGATION (Mobile Only) ── -->
+    <nav class="bottom-nav">
+        <button class="bottom-nav-btn active" id="bnav-list" onclick="setView('list'); setBottomNav('list')">
+            <i data-lucide="list" class="w-5 h-5"></i>
+            <span class="text-[11px]">Lista</span>
+        </button>
+        <!-- Spacer for FAB -->
+        <div class="bottom-nav-spacer"></div>
+        <div class="bottom-nav-spacer"></div>
+        <button class="bottom-nav-btn" id="bnav-cal" onclick="setView('calendar'); setBottomNav('calendar')">
+            <i data-lucide="layout-grid" class="w-5 h-5"></i>
+            <span class="text-[11px]">Kanban</span>
+        </button>
+        <!-- FAB -->
+        <button class="bottom-nav-fab" onclick="openTaskModal()" aria-label="Novo Bloco">
+            <i data-lucide="plus" class="w-6 h-6 text-white"></i>
+        </button>
+    </nav>
+
+
+
 
     <!-- Modal de Importação -->
     <div id="importModal"
@@ -324,8 +659,8 @@
     <div id="analysisModal"
         class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity">
         <div
-            class="bg-surface rounded-xl shadow-xl w-full max-w-3xl overflow-hidden transform scale-95 transition-transform duration-200 max-h-[90vh] flex flex-col">
-            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+            class="bg-surface rounded-xl shadow-xl w-full max-w-4xl overflow-hidden transform scale-95 transition-transform duration-200 max-h-[92vh] flex flex-col">
+            <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
                 <h3 class="font-semibold text-lg flex items-center gap-2"><i data-lucide="pie-chart"
                         class="w-5 h-5 text-primary"></i> Relatório de Desempenho</h3>
                 <button onclick="closeModal('analysisModal')"
@@ -333,43 +668,162 @@
                         class="w-5 h-5"></i></button>
             </div>
 
-            <div class="p-6 overflow-y-auto flex-grow flex flex-col gap-8 bg-slate-50/50">
+            <!-- Abas -->
+            <div class="flex border-b border-slate-200 bg-white px-5">
+                <button onclick="switchAnalysisTab('overview')" id="tab-overview"
+                    class="px-4 py-3 text-sm font-semibold border-b-2 border-primary text-primary transition-colors">Visão Geral</button>
+                <button onclick="switchAnalysisTab('charts')" id="tab-charts"
+                    class="px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition-colors">Gráficos</button>
+                <button onclick="switchAnalysisTab('ai')" id="tab-ai"
+                    class="px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition-colors flex items-center gap-1.5">
+                    <i data-lucide="sparkles" class="w-4 h-4"></i> IA Coach</button>
+            </div>
 
-                <!-- Visão Geral em Tempo -->
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-                        <p class="text-xs font-semibold text-slate-500 uppercase">Horas Planeadas</p>
-                        <p id="an-total-hours" class="text-xl font-bold text-slate-800 mt-1">0h</p>
+            <div class="overflow-y-auto flex-grow bg-slate-50/50">
+
+                <!-- Tab: Visão Geral -->
+                <div id="panel-overview" class="p-6 flex flex-col gap-8">
+                    <!-- Cards KPI -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+                            <p class="text-xs font-semibold text-slate-500 uppercase">Horas Planeadas</p>
+                            <p id="an-total-hours" class="text-xl font-bold text-slate-800 mt-1">0h</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+                            <p class="text-xs font-semibold text-green-600 uppercase">Executadas</p>
+                            <p id="an-completed-hours" class="text-xl font-bold text-green-700 mt-1">0h</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+                            <p class="text-xs font-semibold text-orange-600 uppercase">Défice</p>
+                            <p id="an-pending-hours" class="text-xl font-bold text-orange-700 mt-1">0h</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+                            <p class="text-xs font-semibold text-primary uppercase">Eficiência</p>
+                            <p id="an-efficiency" class="text-xl font-bold text-primary mt-1">0%</p>
+                        </div>
                     </div>
-                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-                        <p class="text-xs font-semibold text-green-600 uppercase">Executadas</p>
-                        <p id="an-completed-hours" class="text-xl font-bold text-green-700 mt-1">0h</p>
+
+                    <!-- Pie Chart + Tags Side by Side -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
+                            <h4 class="text-sm font-bold text-slate-700 mb-3">Distribuição Geral</h4>
+                            <div class="relative" style="max-height: 240px;"><canvas id="chart-pie"></canvas></div>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-bold text-slate-700 mb-3">Por Categoria (Tags)</h4>
+                            <div id="an-tags-container" class="flex flex-col gap-3 max-h-60 overflow-y-auto pr-1">
+                            </div>
+                        </div>
                     </div>
-                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-                        <p class="text-xs font-semibold text-orange-600 uppercase">Défice</p>
-                        <p id="an-pending-hours" class="text-xl font-bold text-orange-700 mt-1">0h</p>
-                    </div>
-                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-                        <p class="text-xs font-semibold text-primary uppercase">Eficiência</p>
-                        <p id="an-efficiency" class="text-xl font-bold text-primary mt-1">0%</p>
+
+                    <!-- Daily Completion List -->
+                    <div>
+                        <h4 class="text-sm font-bold text-slate-700 mb-3 border-b border-slate-200 pb-2">Taxa de Conclusão Diária</h4>
+                        <div id="an-days-container" class="flex flex-col gap-3 max-h-60 overflow-y-auto pr-1"></div>
                     </div>
                 </div>
 
-                <!-- Análise por Etiquetas (Tags) -->
-                <div>
-                    <h4 class="text-sm font-bold text-slate-700 mb-4 border-b border-slate-200 pb-2">Desempenho por
-                        Categoria (Etiquetas)</h4>
-                    <div id="an-tags-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <!-- Renderizado via JS -->
+                <!-- Tab: Gráficos -->
+                <div id="panel-charts" class="p-6 flex flex-col gap-8 hidden">
+                    <!-- Daily Bar Chart -->
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
+                        <h4 class="text-sm font-bold text-slate-700 mb-1">Horas Diárias: Planeadas vs Executadas</h4>
+                        <p class="text-xs text-slate-400 mb-4">Cada barra mostra o total de horas planejadas e quantas foram concluídas.</p>
+                        <div style="max-height: 320px;"><canvas id="chart-daily-bars"></canvas></div>
+                    </div>
+
+                    <!-- Weekly Bar Chart -->
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
+                        <h4 class="text-sm font-bold text-slate-700 mb-1">Taxa de Conclusão Semanal</h4>
+                        <p class="text-xs text-slate-400 mb-4">Agrupamento por semana do ano — eficiência média.</p>
+                        <div style="max-height: 280px;"><canvas id="chart-weekly"></canvas></div>
+                    </div>
+
+                    <!-- Tags Horizontal Bar -->
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
+                        <h4 class="text-sm font-bold text-slate-700 mb-1">Horas por Categoria</h4>
+                        <p class="text-xs text-slate-400 mb-4">Total de horas dedicadas a cada tag.</p>
+                        <div style="max-height: 300px;"><canvas id="chart-tags-bar"></canvas></div>
+                    </div>
+
+                    <!-- Tarefas por Tag (Contagem) -->
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
+                        <h4 class="text-sm font-bold text-slate-700 mb-1">Tarefas por Tag</h4>
+                        <p class="text-xs text-slate-400 mb-4">Número de tarefas agrupadas por tag (total vs concluídas).</p>
+                        <div style="max-height: 300px;"><canvas id="chart-tasks-by-tag"></canvas></div>
                     </div>
                 </div>
 
-                <!-- Análise por Dia -->
-                <div>
-                    <h4 class="text-sm font-bold text-slate-700 mb-4 border-b border-slate-200 pb-2">Taxa de Conclusão
-                        Diária</h4>
-                    <div id="an-days-container" class="flex flex-col gap-3">
-                        <!-- Renderizado via JS -->
+                <!-- Tab: IA Coach -->
+                <div id="panel-ai" class="p-6 flex flex-col gap-6 hidden">
+                    <div class="bg-gradient-to-br from-violet-50 to-blue-50 p-5 rounded-xl border border-violet-200">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-gradient-to-br from-violet-500 to-blue-600 rounded-xl flex items-center justify-center shadow">
+                                    <i data-lucide="sparkles" class="w-5 h-5 text-white"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-slate-800">Coach de Produtividade com IA</h4>
+                                    <p class="text-xs text-slate-500">Powered by Google Gemini</p>
+                                </div>
+                            </div>
+                            <!-- Period Selector + Generate Button -->
+                            <div class="flex items-center gap-2">
+                                <div class="flex bg-slate-200/70 p-0.5 rounded-lg">
+                                    <button onclick="setAIPeriod('hoje')" id="btn-period-hoje" class="px-3 py-1 text-xs font-semibold rounded-md text-slate-500 transition-all">Hoje</button>
+                                    <button onclick="setAIPeriod('semana')" id="btn-period-semana" class="px-3 py-1 text-xs font-semibold rounded-md bg-white shadow-sm text-primary transition-all">Semana</button>
+                                </div>
+                                <button onclick="generateAICoaching()" id="btn-ai-generate"
+                                    class="bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-700 hover:to-blue-700 text-white px-4 py-2 rounded-lg text-xs font-semibold transition-all shadow-md flex items-center gap-1.5">
+                                    <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Gerar Diagnóstico
+                                </button>
+                            </div>
+                        </div>
+                        <p class="text-sm text-slate-600 leading-relaxed">Selecione o período e clique em "Gerar Diagnóstico" para invocar o Coach IA.</p>
+                    </div>
+
+                    <!-- AI Loading State -->
+                    <div id="ai-loading" class="hidden text-center py-10">
+                        <div class="inline-flex items-center gap-3 text-violet-600">
+                            <i data-lucide="loader" class="w-6 h-6 sync-spinning"></i>
+                            <span class="text-sm font-medium">A analisar os seus dados com IA...</span>
+                        </div>
+                    </div>
+
+                    <!-- AI Response -->
+                    <div id="ai-response" class="hidden">
+                        <div id="ai-response-content" class="bg-white rounded-xl shadow-sm border border-slate-100 p-6 prose prose-sm prose-slate max-w-none"></div>
+                    </div>
+
+                    <!-- Action Bar (appears after report) -->
+                    <div id="ai-action-bar" class="hidden flex items-center gap-2 flex-wrap">
+                        <button onclick="printReport()" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors shadow-sm">
+                            <i data-lucide="printer" class="w-3.5 h-3.5"></i> Imprimir
+                        </button>
+                        <button onclick="exportReportMd()" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors shadow-sm">
+                            <i data-lucide="file-down" class="w-3.5 h-3.5"></i> Exportar .md
+                        </button>
+                    </div>
+
+                    <!-- Chat Section (appears after report) -->
+                    <div id="ai-chat-section" class="hidden">
+                        <h4 class="text-sm font-bold text-slate-700 mb-2 flex items-center gap-1.5">
+                            <i data-lucide="message-circle" class="w-4 h-4"></i> Conversar sobre o Relatório
+                        </h4>
+                        <div id="ai-chat-messages" class="flex flex-col gap-2 max-h-64 overflow-y-auto mb-3 p-3 bg-white rounded-xl border border-slate-100"></div>
+                        <div class="flex gap-2">
+                            <input id="ai-chat-input" type="text" placeholder="Faça uma pergunta sobre o relatório..."
+                                class="flex-grow border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-violet-400 focus:border-violet-400 outline-none"
+                                onkeydown="if(event.key==='Enter')sendChatMessage()">
+                            <button onclick="sendChatMessage()" class="bg-gradient-to-r from-violet-600 to-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm hover:from-violet-700 hover:to-blue-700 transition-all flex items-center gap-1">
+                                <i data-lucide="send" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- AI Error -->
+                    <div id="ai-error" class="hidden bg-red-50 border border-red-200 rounded-xl p-4">
+                        <p class="text-sm text-red-700" id="ai-error-text"></p>
                     </div>
                 </div>
 
@@ -385,51 +839,77 @@
 
     <!-- Modal de Tarefa (Adicionar/Editar) -->
     <div id="taskModal"
-        class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity">
+        class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity">
         <div
-            class="bg-surface rounded-xl shadow-xl w-full max-w-md overflow-hidden transform scale-95 transition-transform duration-200">
-            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                <h3 id="taskModalTitle" class="font-semibold text-lg">Nova Tarefa</h3>
+            class="bg-surface rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform scale-95 transition-transform duration-200 border border-slate-200/50">
+            <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-gradient-to-r from-slate-50 to-white">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 hero-gradient rounded-xl flex items-center justify-center shadow-md">
+                        <i data-lucide="plus-square" class="text-white w-5 h-5"></i>
+                    </div>
+                    <h3 id="taskModalTitle" class="font-bold text-lg text-slate-800">Novo Bloco de Foco</h3>
+                </div>
                 <button onclick="closeModal('taskModal')"
-                    class="text-slate-400 hover:text-slate-600 transition-colors"><i data-lucide="x"
+                    class="text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors p-2 rounded-lg"><i data-lucide="x"
                         class="w-5 h-5"></i></button>
             </div>
-            <div class="p-6 flex flex-col gap-4">
+            <div class="p-6 flex flex-col gap-5">
                 <input type="hidden" id="taskId">
 
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Título</label>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                        <i data-lucide="type" class="w-4 h-4 inline mr-1"></i>Título
+                    </label>
                     <input type="text" id="taskTitle"
-                        class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none"
+                        class="w-full border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
                         placeholder="Ex: 📖 Devocional">
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Data</label>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">
+                            <i data-lucide="calendar" class="w-4 h-4 inline mr-1"></i>Data
+                        </label>
                         <input type="date" id="taskDate"
-                            class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none">
+                            class="w-full border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Tags (separadas por espaço)</label>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">
+                            <i data-lucide="tag" class="w-4 h-4 inline mr-1"></i>Tags
+                        </label>
                         <input type="text" id="taskTags"
-                            class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none"
+                            class="w-full border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
                             placeholder="#Teologia #Foco">
                     </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Início</label>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">
+                            <i data-lucide="clock" class="w-4 h-4 inline mr-1"></i>Início
+                        </label>
                         <input type="time" id="taskStartTime"
-                            class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none">
+                            class="w-full border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Fim</label>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">
+                            <i data-lucide="clock-4" class="w-4 h-4 inline mr-1"></i>Fim
+                        </label>
                         <input type="time" id="taskEndTime"
-                            class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none">
+                            class="w-full border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all">
                     </div>
                 </div>
+            </div>
+            <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+                <button onclick="closeModal('taskModal')"
+                    class="px-5 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-200 rounded-xl transition-colors">Cancelar</button>
+                <button onclick="saveTask()"
+                    class="hero-gradient px-5 py-2.5 text-sm font-semibold text-white hover:shadow-lg rounded-xl transition-all shadow-md flex items-center gap-2">
+                    <i data-lucide="save" class="w-4 h-4"></i> Guardar
+                </button>
+            </div>
+        </div>
+    </div>
             </div>
             <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
                 <button onclick="closeModal('taskModal')"
@@ -460,6 +940,27 @@
                         placeholder="https://script.google.com/macros/s/.../exec">
                     <p class="text-xs text-slate-400 mt-1">Cole aqui a URL do seu Web App (Apps Script). Sem ela, apenas o salvamento local funciona.</p>
                 </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Chave API Gemini</label>
+                    <input type="password" id="settingsGeminiKey"
+                        class="w-full border border-slate-300 rounded-lg p-2.5 text-sm font-mono focus:ring-2 focus:ring-primary focus:border-primary outline-none"
+                        placeholder="AIza...">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Chave API OpenAI</label>
+                    <input type="password" id="settingsOpenAIKey"
+                        class="w-full border border-slate-300 rounded-lg p-2.5 text-sm font-mono focus:ring-2 focus:ring-primary focus:border-primary outline-none"
+                        placeholder="sk-...">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Provedor de IA Padrão</label>
+                    <select id="settingsAIProvider"
+                        class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none bg-white">
+                        <option value="gemini">Google Gemini (Gratuito)</option>
+                        <option value="openai">OpenAI (GPT-4o mini)</option>
+                    </select>
+                    <p class="text-xs text-slate-400 mt-1">Escolha qual IA usar para o relatório de produtividade.</p>
+                </div>
             </div>
             <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
                 <button onclick="closeModal('settingsModal')"
@@ -472,8 +973,10 @@
 
     <!-- Toast Notification -->
     <div id="toast"
-        class="fixed bottom-4 right-4 bg-slate-800 text-white px-4 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-50 flex items-center gap-2">
-        <i data-lucide="info" class="w-5 h-5 text-blue-400"></i>
+        class="fixed bottom-20 md:bottom-4 right-4 bg-slate-800/95 backdrop-blur-md text-white px-5 py-3 rounded-xl shadow-2xl transform translate-y-20 opacity-0 transition-all duration-300 z-50 flex items-center gap-3 border border-slate-700/50">
+        <div class="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center flex-shrink-0">
+            <i data-lucide="bell" class="w-4 h-4 text-primary"></i>
+        </div>
         <span id="toastMessage" class="text-sm font-medium">Notificação</span>
     </div>
 
@@ -491,11 +994,100 @@
         const STORAGE_KEY = 'titan_planner_tasks';
         const SETTINGS_KEY = 'titan_planner_settings';
         let APPS_SCRIPT_URL = '';
+        let GEMINI_API_KEY = '';
+        let OPENAI_API_KEY = '';
+        let AI_PROVIDER = 'gemini';
         let autoSaveEnabled = false;
         let autoSaveTimer = null;
+        let analysisCharts = {}; // store chart instances for cleanup
 
         // Dia da semana para exibição
         const daysOfWeek = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+
+        // ==========================================
+        // CORES ÚNICAS POR TAG
+        // ==========================================
+        const TAG_PALETTE = [
+            { bg: 'rgba(79,70,229,0.15)', border: '#4f46e5', text: '#4338ca' },   // indigo
+            { bg: 'rgba(16,185,129,0.15)', border: '#10b981', text: '#059669' },   // emerald
+            { bg: 'rgba(249,115,22,0.15)', border: '#f97316', text: '#ea580c' },   // orange
+            { bg: 'rgba(139,92,246,0.15)', border: '#8b5cf6', text: '#7c3aed' },   // violet
+            { bg: 'rgba(6,182,212,0.15)', border: '#06b6d4', text: '#0891b2' },    // cyan
+            { bg: 'rgba(236,72,153,0.15)', border: '#ec4899', text: '#db2777' },   // pink
+            { bg: 'rgba(245,158,11,0.15)', border: '#f59e0b', text: '#d97706' },   // amber
+            { bg: 'rgba(20,184,166,0.15)', border: '#14b8a6', text: '#0d9488' },   // teal
+            { bg: 'rgba(239,68,68,0.15)', border: '#ef4444', text: '#dc2626' },    // red
+            { bg: 'rgba(59,130,246,0.15)', border: '#3b82f6', text: '#2563eb' },   // blue
+        ];
+
+        // Mapa para memoizar cores — mesma tag sempre mesma cor
+        const tagColorMap = {};
+        let tagColorIdx = 0;
+
+        function getTagColor(tag) {
+            if (!tagColorMap[tag]) {
+                tagColorMap[tag] = TAG_PALETTE[tagColorIdx % TAG_PALETTE.length];
+                tagColorIdx++;
+            }
+            return tagColorMap[tag];
+        }
+
+        function tagPillHtml(tag, small = false) {
+            const c = getTagColor(tag);
+            const size = small ? 'text-[9px] px-1.5 py-0' : 'text-[10px] px-2 py-0.5';
+            return `<span class="task-tag-pill inline-block rounded font-semibold ${size}" style="background:${c.bg};border:1px solid ${c.border};color:${c.text}">${tag}</span>`;
+        }
+
+        // ==========================================
+        // DARK MODE
+        // ==========================================
+        let darkMode = false;
+
+        function toggleDarkMode() {
+            darkMode = !darkMode;
+            document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : '');
+            localStorage.setItem('titan_dark_mode', darkMode ? '1' : '0');
+            // Update all moon/sun icons
+            const icons = ['dark-mode-icon', 'dark-mode-icon-mobile'];
+            icons.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.setAttribute('data-lucide', darkMode ? 'sun' : 'moon');
+            });
+            lucide.createIcons();
+        }
+
+        function applyDarkModeFromStorage() {
+            const saved = localStorage.getItem('titan_dark_mode');
+            if (saved === '1') {
+                darkMode = true;
+                document.documentElement.setAttribute('data-theme', 'dark');
+                setTimeout(() => {
+                    const icons = ['dark-mode-icon', 'dark-mode-icon-mobile'];
+                    icons.forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) el.setAttribute('data-lucide', 'sun');
+                    });
+                    lucide.createIcons();
+                }, 100);
+            }
+        }
+
+        // Helper seguro para obter o nome do dia
+        function safeDayName(dateStr) {
+            try {
+                const d = new Date(dateStr + 'T00:00:00');
+                if (isNaN(d.getTime())) return dateStr;
+                return daysOfWeek[d.getDay()] || dateStr;
+            } catch (e) {
+                return dateStr;
+            }
+        }
+
+        function safeFormattedDate(dateStr) {
+            const parts = dateStr.split('-');
+            if (parts.length === 3) return `${parts[2]}/${parts[1]}`;
+            return dateStr;
+        }
 
         // ==========================================
         // PERSISTÊNCIA — LOCAL (localStorage)
@@ -698,10 +1290,20 @@
 
         function saveSettings() {
             const url = document.getElementById('settingsAppsScriptUrl').value.trim();
+            const geminiKey = document.getElementById('settingsGeminiKey').value.trim();
+            const openaiKey = document.getElementById('settingsOpenAIKey').value.trim();
+            const aiProvider = document.getElementById('settingsAIProvider').value;
+            
             APPS_SCRIPT_URL = url;
+            GEMINI_API_KEY = geminiKey;
+            OPENAI_API_KEY = openaiKey;
+            AI_PROVIDER = aiProvider;
 
             const settings = loadSettings();
             settings.appsScriptUrl = url;
+            settings.geminiKey = geminiKey;
+            settings.openaiKey = openaiKey;
+            settings.aiProvider = aiProvider;
             localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
 
             updateSyncStatus('idle');
@@ -712,15 +1314,24 @@
         function applySettings() {
             const settings = loadSettings();
             APPS_SCRIPT_URL = settings.appsScriptUrl || '';
+            GEMINI_API_KEY = settings.geminiKey || '';
+            OPENAI_API_KEY = settings.openaiKey || '';
+            AI_PROVIDER = settings.aiProvider || 'gemini';
             autoSaveEnabled = settings.autoSave || false;
 
             // UI toggle
             const toggle = document.getElementById('auto-sync-toggle');
             if (toggle) toggle.classList.toggle('active', autoSaveEnabled);
 
-            // Settings modal
+            // Settings modal inputs
             const urlInput = document.getElementById('settingsAppsScriptUrl');
             if (urlInput) urlInput.value = APPS_SCRIPT_URL;
+            const geminiInput = document.getElementById('settingsGeminiKey');
+            if (geminiInput) geminiInput.value = GEMINI_API_KEY;
+            const openaiInput = document.getElementById('settingsOpenAIKey');
+            if (openaiInput) openaiInput.value = OPENAI_API_KEY;
+            const providerInput = document.getElementById('settingsAIProvider');
+            if (providerInput) providerInput.value = AI_PROVIDER;
 
             updateSyncStatus('idle');
         }
@@ -736,8 +1347,8 @@
             currentView = view;
 
             // Atualizar botões UI
-            const activeClasses = 'px-4 py-1.5 text-sm font-semibold rounded-md bg-white shadow-sm text-slate-800 transition-all flex items-center gap-2';
-            const inactiveClasses = 'px-4 py-1.5 text-sm font-semibold rounded-md text-slate-500 hover:text-slate-800 transition-all flex items-center gap-2';
+            const activeClasses = 'px-4 py-2 text-sm font-semibold rounded-lg bg-primary text-white shadow-sm transition-all flex items-center gap-2';
+            const inactiveClasses = 'px-4 py-2 text-sm font-semibold rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition-all flex items-center gap-2';
 
             document.getElementById('btn-view-list').className = view === 'list' ? activeClasses : inactiveClasses;
             document.getElementById('btn-view-cal').className = view === 'calendar' ? activeClasses : inactiveClasses;
@@ -829,6 +1440,441 @@
             return `${m}m`;
         }
 
+        // ==========================================
+        // TABS DO MODAL DE ANÁLISE
+        // ==========================================
+        function switchAnalysisTab(tab) {
+            const tabs = ['overview', 'charts', 'ai'];
+            tabs.forEach(t => {
+                const panel = document.getElementById(`panel-${t}`);
+                const btn = document.getElementById(`tab-${t}`);
+                if (t === tab) {
+                    panel.classList.remove('hidden');
+                    btn.className = 'px-4 py-3 text-sm font-semibold border-b-2 border-primary text-primary transition-colors flex items-center gap-1.5';
+                } else {
+                    panel.classList.add('hidden');
+                    btn.className = 'px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition-colors flex items-center gap-1.5';
+                }
+            });
+        }
+
+        // ==========================================
+        // GRÁFICOS (Chart.js)
+        // ==========================================
+        function destroyCharts() {
+            Object.values(analysisCharts).forEach(c => { if (c) c.destroy(); });
+            analysisCharts = {};
+        }
+
+        function renderCharts(dayStats, tagStats, totalMins, completedMins) {
+            destroyCharts();
+
+            const chartColors = {
+                blue: '#3b82f6', green: '#16a34a', orange: '#f97316',
+                red: '#ef4444', violet: '#8b5cf6', cyan: '#06b6d4',
+                pink: '#ec4899', teal: '#14b8a6', amber: '#f59e0b',
+                slate: '#94a3b8'
+            };
+            const palette = Object.values(chartColors);
+
+            // 1. Pie Chart — Concluído vs Pendente
+            const ctxPie = document.getElementById('chart-pie').getContext('2d');
+            analysisCharts.pie = new Chart(ctxPie, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Concluído', 'Pendente'],
+                    datasets: [{
+                        data: [completedMins, totalMins - completedMins],
+                        backgroundColor: [chartColors.green, chartColors.slate],
+                        borderWidth: 0,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    cutout: '65%',
+                    plugins: {
+                        legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true, pointStyle: 'circle' } },
+                        tooltip: {
+                            callbacks: { label: (ctx) => `${ctx.label}: ${formatMinutes(ctx.raw)}` }
+                        }
+                    }
+                }
+            });
+
+            // 2. Daily Bars — Planeadas vs Executadas
+            const sortedDates = Object.keys(dayStats).sort();
+            const dailyLabels = sortedDates.map(d => {
+                const parts = d.split('-');
+                return `${parts[2]}/${parts[1]}`;
+            });
+            const dailyPlanned = sortedDates.map(d => +(dayStats[d].total / 60).toFixed(1));
+            const dailyDone = sortedDates.map(d => +(dayStats[d].completed / 60).toFixed(1));
+
+            const ctxDaily = document.getElementById('chart-daily-bars').getContext('2d');
+            analysisCharts.daily = new Chart(ctxDaily, {
+                type: 'bar',
+                data: {
+                    labels: dailyLabels,
+                    datasets: [
+                        { label: 'Planeadas (h)', data: dailyPlanned, backgroundColor: chartColors.blue + '33', borderColor: chartColors.blue, borderWidth: 2, borderRadius: 6 },
+                        { label: 'Executadas (h)', data: dailyDone, backgroundColor: chartColors.green + '55', borderColor: chartColors.green, borderWidth: 2, borderRadius: 6 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, title: { display: true, text: 'Horas' }, ticks: { stepSize: 1 } } },
+                    plugins: { legend: { position: 'top', labels: { usePointStyle: true, pointStyle: 'circle' } } }
+                }
+            });
+
+            // 3. Weekly Chart — Eficiência por semana
+            const weeklyStats = {};
+            sortedDates.forEach(d => {
+                const dateObj = new Date(d + 'T00:00:00');
+                const startOfYear = new Date(dateObj.getFullYear(), 0, 1);
+                const weekNum = Math.ceil(((dateObj - startOfYear) / 86400000 + startOfYear.getDay() + 1) / 7);
+                const key = `S${weekNum}`;
+                if (!weeklyStats[key]) weeklyStats[key] = { total: 0, completed: 0 };
+                weeklyStats[key].total += dayStats[d].total;
+                weeklyStats[key].completed += dayStats[d].completed;
+            });
+
+            const weekLabels = Object.keys(weeklyStats);
+            const weekEfficiency = weekLabels.map(w => {
+                const s = weeklyStats[w];
+                return s.total === 0 ? 0 : Math.round((s.completed / s.total) * 100);
+            });
+
+            const ctxWeekly = document.getElementById('chart-weekly').getContext('2d');
+            analysisCharts.weekly = new Chart(ctxWeekly, {
+                type: 'bar',
+                data: {
+                    labels: weekLabels,
+                    datasets: [{
+                        label: 'Eficiência (%)',
+                        data: weekEfficiency,
+                        backgroundColor: weekEfficiency.map(v => v >= 80 ? chartColors.green + '66' : v >= 50 ? chartColors.orange + '66' : chartColors.red + '66'),
+                        borderColor: weekEfficiency.map(v => v >= 80 ? chartColors.green : v >= 50 ? chartColors.orange : chartColors.red),
+                        borderWidth: 2, borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, max: 100, title: { display: true, text: '%' }, ticks: { stepSize: 20 } } },
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            // 4. Tags Horizontal Bar
+            const sortedTagKeys = Object.keys(tagStats).sort((a, b) => tagStats[b].total - tagStats[a].total);
+            const ctxTags = document.getElementById('chart-tags-bar').getContext('2d');
+            analysisCharts.tags = new Chart(ctxTags, {
+                type: 'bar',
+                data: {
+                    labels: sortedTagKeys,
+                    datasets: [
+                        { label: 'Planeadas (h)', data: sortedTagKeys.map(t => +(tagStats[t].total / 60).toFixed(1)), backgroundColor: chartColors.blue + '44', borderColor: chartColors.blue, borderWidth: 1.5, borderRadius: 4 },
+                        { label: 'Executadas (h)', data: sortedTagKeys.map(t => +(tagStats[t].completed / 60).toFixed(1)), backgroundColor: chartColors.green + '55', borderColor: chartColors.green, borderWidth: 1.5, borderRadius: 4 }
+                    ]
+                },
+                options: {
+                    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                    scales: { x: { beginAtZero: true, title: { display: true, text: 'Horas' } } },
+                    plugins: { legend: { position: 'top', labels: { usePointStyle: true, pointStyle: 'circle' } } }
+                }
+            });
+        }
+
+        // ==========================================
+        // IA COACH — Period, Chat, Print, Export
+        // ==========================================
+        let aiPeriod = 'semana'; // default
+        let chatHistory = []; // {role, text}
+        let lastAIReport = ''; // raw markdown
+        let lastAIPrompt = ''; // original prompt sent
+
+        function setAIPeriod(period) {
+            aiPeriod = period;
+            const hoje = document.getElementById('btn-period-hoje');
+            const semana = document.getElementById('btn-period-semana');
+            const active = 'px-3 py-1 text-xs font-semibold rounded-md bg-white shadow-sm text-primary transition-all';
+            const inactive = 'px-3 py-1 text-xs font-semibold rounded-md text-slate-500 transition-all';
+            hoje.className = period === 'hoje' ? active : inactive;
+            semana.className = period === 'semana' ? active : inactive;
+        }
+
+        function getFilteredTasks() {
+            const today = new Date();
+            const toStr = (dt) => {
+                const y = dt.getFullYear();
+                const m = String(dt.getMonth() + 1).padStart(2, '0');
+                const d = String(dt.getDate()).padStart(2, '0');
+                return `${y}-${m}-${d}`;
+            };
+            const todayStr = toStr(today);
+
+            if (aiPeriod === 'hoje') {
+                return tasks.filter(t => t.date === todayStr);
+            }
+            // semana — janela de 7 dias para trás e 7 para frente a partir de hoje
+            const start = new Date(today); start.setDate(start.getDate() - 7);
+            const end   = new Date(today); end.setDate(end.getDate() + 7);
+            const startStr = toStr(start);
+            const endStr   = toStr(end);
+            return tasks.filter(t => t.date >= startStr && t.date <= endStr);
+        }
+
+        function buildStatsForAI(filtered) {
+            let totalMins = 0, completedMins = 0;
+            let dayStats = {}, tagStats = {}, taskList = [];
+            filtered.forEach(t => {
+                const dur = calculateDurationInMinutes(t.startTime, t.endTime);
+                totalMins += dur; if (t.completed) completedMins += dur;
+                if (!dayStats[t.date]) dayStats[t.date] = { total:0, completed:0, tasks:0, done:0 };
+                dayStats[t.date].total += dur; dayStats[t.date].tasks++;
+                if (t.completed) { dayStats[t.date].completed += dur; dayStats[t.date].done++; }
+                const tags = t.tags.length > 0 ? t.tags : ['#SemEtiqueta'];
+                tags.forEach(tag => {
+                    if (!tagStats[tag]) tagStats[tag] = { total:0, completed:0 };
+                    tagStats[tag].total += dur; if (t.completed) tagStats[tag].completed += dur;
+                });
+                taskList.push(`${t.date} ${t.startTime}-${t.endTime} "${t.title}" [${t.completed ? 'CONCLUÍDA' : 'PENDENTE'}] tags: ${t.tags.join(', ') || 'nenhuma'}`);
+            });
+            const dailySummary = Object.keys(dayStats).sort().map(d => {
+                const s = dayStats[d]; const pct = s.total === 0 ? 0 : Math.round((s.completed / s.total) * 100);
+                return `  ${d}: ${s.done}/${s.tasks} tarefas (${pct}%, ${formatMinutes(s.completed)}/${formatMinutes(s.total)})`;
+            }).join('\n');
+            const tagSummary = Object.keys(tagStats).sort((a,b) => tagStats[b].total - tagStats[a].total).map(tag => {
+                const s = tagStats[tag]; const pct = s.total === 0 ? 0 : Math.round((s.completed / s.total) * 100);
+                return `  ${tag}: ${formatMinutes(s.completed)}/${formatMinutes(s.total)} (${pct}%)`;
+            }).join('\n');
+            return `Período: ${aiPeriod === 'hoje' ? 'Hoje' : 'Última Semana'}
+Total de tarefas: ${filtered.length}
+Concluídas: ${filtered.filter(t => t.completed).length}
+Pendentes: ${filtered.filter(t => !t.completed).length}
+Total horas planeadas: ${formatMinutes(totalMins)}
+Horas executadas: ${formatMinutes(completedMins)}
+Eficiência geral: ${totalMins === 0 ? 0 : Math.round((completedMins / totalMins) * 100)}%
+
+POR DIA:
+${dailySummary}
+
+POR CATEGORIA:
+${tagSummary}
+
+LISTA COMPLETA DE TAREFAS:
+${taskList.join('\n')}`;
+        }
+
+        async function generateAICoaching() {
+            const provider = AI_PROVIDER || 'gemini';
+            const apiKey = (provider === 'openai') ? OPENAI_API_KEY : GEMINI_API_KEY;
+
+            const btn = document.getElementById('btn-ai-generate');
+            const loading = document.getElementById('ai-loading');
+            const responseDiv = document.getElementById('ai-response');
+            const errorDiv = document.getElementById('ai-error');
+            const errorText = document.getElementById('ai-error-text');
+
+            const showModalError = (msg) => {
+                loading.classList.add('hidden');
+                errorText.innerHTML = msg;
+                errorDiv.classList.remove('hidden');
+                btn.disabled = false;
+                btn.innerHTML = '<i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Gerar Diagnóstico';
+                lucide.createIcons();
+            };
+
+            if (!apiKey) {
+                showModalError('🔑 <strong>Chave API não configurada.</strong><br>Acesse as <strong>Configurações</strong> (ícone ⚙️ no topo) e insira a chave do ' + (provider === 'openai' ? 'OpenAI' : 'Google Gemini') + '.');
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+
+            let filtered = getFilteredTasks();
+            const usingFallback = filtered.length === 0;
+            if (usingFallback) filtered = tasks;
+            if (filtered.length === 0) {
+                showModalError('📭 <strong>Nenhuma tarefa encontrada.</strong><br>Adicione tarefas na agenda antes de gerar o diagnóstico.');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i data-lucide="loader" class="w-3.5 h-3.5 sync-spinning"></i> A gerar...';
+            loading.classList.remove('hidden');
+            responseDiv.classList.add('hidden');
+            errorDiv.classList.add('hidden');
+            document.getElementById('ai-action-bar').classList.add('hidden');
+            document.getElementById('ai-chat-section').classList.add('hidden');
+            lucide.createIcons();
+
+            // Reset chat
+            chatHistory = [];
+            document.getElementById('ai-chat-messages').innerHTML = '';
+
+            const summary = buildStatsForAI(filtered);
+            const prompt = `Você é um coach de produtividade experiente e empático. Analise os dados de tarefas do utilizador abaixo e forneça uma análise COMPLETA em português:
+
+1. **📊 Resumo do Desempenho** — Avaliação geral com nota (de A+ a F)
+2. **📈 Padrões Identificados** — Dias mais produtivos, horários fortes, categorias com défice
+3. **💡 5 Conselhos Práticos** — Específicos baseados nos dados, não genéricos
+4. **⚠️ Alertas** — Sobre possíveis riscos (burnout, procrastinação, sobrecarga)
+5. **🎯 Próximos Passos** — 3 ações concretas para a próxima semana
+
+Use emojis, formatação clara com markdown, e um tom motivador mas realista.
+
+--- DADOS DO UTILIZADOR ---
+${summary}
+--- FIM DOS DADOS ---`;
+
+            lastAIPrompt = prompt;
+
+            try {
+                let aiText = '';
+                if (provider === 'openai') {
+                    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+                        body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], temperature: 0.7 })
+                    });
+                    const data = await response.json();
+                    if (data.choices && data.choices[0]) { aiText = data.choices[0].message.content; }
+                    else { throw new Error(data.error?.message || 'Erro na API OpenAI.'); }
+                } else {
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.7, maxOutputTokens: 2048 } })
+                    });
+                    const data = await response.json();
+                    if (data.candidates && data.candidates[0]) { aiText = data.candidates[0].content.parts[0].text; }
+                    else { throw new Error(data.error?.message || 'Erro na API Gemini.'); }
+                }
+
+                lastAIReport = aiText;
+                chatHistory = [
+                    { role: 'user', text: prompt },
+                    { role: 'assistant', text: aiText }
+                ];
+
+                document.getElementById('ai-response-content').innerHTML = renderMarkdown(aiText);
+                responseDiv.classList.remove('hidden');
+                document.getElementById('ai-action-bar').classList.remove('hidden');
+                document.getElementById('ai-chat-section').classList.remove('hidden');
+                lucide.createIcons();
+            } catch (e) {
+                console.error(`Erro na API ${provider}:`, e);
+                errorText.innerHTML = `❌ <strong>Erro na API ${provider}:</strong> ${e.message}`;
+                errorDiv.classList.remove('hidden');
+            } finally {
+                loading.classList.add('hidden');
+                btn.disabled = false;
+                btn.innerHTML = '<i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Gerar Diagnóstico';
+                lucide.createIcons();
+            }
+        }
+
+        // ==========================================
+        // CHAT INTERATIVO
+        // ==========================================
+        async function sendChatMessage() {
+            const input = document.getElementById('ai-chat-input');
+            const msg = input.value.trim();
+            if (!msg) return;
+            input.value = '';
+
+            const provider = AI_PROVIDER || 'gemini';
+            const apiKey = (provider === 'openai') ? OPENAI_API_KEY : GEMINI_API_KEY;
+            if (!apiKey) { showToast('⚠️ Configure a chave API.'); return; }
+
+            const container = document.getElementById('ai-chat-messages');
+            container.innerHTML += `<div class="chat-bubble-user">${msg}</div>`;
+            chatHistory.push({ role: 'user', text: msg });
+
+            // Loading bubble
+            const loadId = 'chat-load-' + Date.now();
+            container.innerHTML += `<div id="${loadId}" class="chat-bubble-ai" style="opacity:.6"><i data-lucide="loader" class="w-4 h-4 sync-spinning inline-block"></i> A pensar...</div>`;
+            container.scrollTop = container.scrollHeight;
+            lucide.createIcons();
+
+            try {
+                let aiText = '';
+                if (provider === 'openai') {
+                    const messages = chatHistory.map(m => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: m.text }));
+                    const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+                        body: JSON.stringify({ model: 'gpt-4o-mini', messages, temperature: 0.7 })
+                    });
+                    const data = await resp.json();
+                    aiText = data.choices?.[0]?.message?.content || 'Sem resposta.';
+                } else {
+                    const contents = chatHistory.map(m => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.text }] }));
+                    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ contents, generationConfig: { temperature: 0.7, maxOutputTokens: 1024 } })
+                    });
+                    const data = await resp.json();
+                    aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sem resposta.';
+                }
+
+                chatHistory.push({ role: 'assistant', text: aiText });
+                const loadEl = document.getElementById(loadId);
+                if (loadEl) loadEl.outerHTML = `<div class="chat-bubble-ai">${renderMarkdown(aiText)}</div>`;
+            } catch (e) {
+                const loadEl = document.getElementById(loadId);
+                if (loadEl) loadEl.outerHTML = `<div class="chat-bubble-ai" style="color:#dc2626">Erro: ${e.message}</div>`;
+            }
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // ==========================================
+        // PRINT & EXPORT
+        // ==========================================
+        function printReport() {
+            const content = document.getElementById('ai-response-content').innerHTML;
+            const w = window.open('', '_blank');
+            w.document.write(`<html><head><title>Relatório IA</title><style>body{font-family:Inter,sans-serif;padding:2rem;max-width:800px;margin:auto}h1,h2,h3{margin-top:1.2em}li{margin-left:1.5em;margin-bottom:.3em}code{background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:.85em}</style></head><body>${content}</body></html>`);
+            w.document.close(); w.print();
+        }
+
+        function exportReportMd() {
+            if (!lastAIReport) { showToast('⚠️ Gere um relatório primeiro.'); return; }
+            const header = `# Relatório IA — ${aiPeriod === 'hoje' ? 'Hoje' : 'Semana'}\nGerado em: ${new Date().toLocaleString('pt-PT')}\n\n---\n\n`;
+            const blob = new Blob([header + lastAIReport], { type: 'text/markdown' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url;
+            a.download = `relatorio_ia_${aiPeriod}_${new Date().toISOString().slice(0,10)}.md`;
+            a.click(); URL.revokeObjectURL(url);
+        }
+
+        // ==========================================
+        // LEGACY COMPAT — buildTaskSummaryForAI
+        // ==========================================
+        function buildTaskSummaryForAI() {
+            return buildStatsForAI(tasks);
+        }
+
+        function renderMarkdown(text) {
+            return text
+                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.+?)\*/g, '<em>$1</em>')
+                .replace(/^### (.+)$/gm, '<h3 class="text-base font-bold text-slate-800 mt-4 mb-2">$1</h3>')
+                .replace(/^## (.+)$/gm, '<h2 class="text-lg font-bold text-slate-800 mt-5 mb-2">$1</h2>')
+                .replace(/^# (.+)$/gm, '<h1 class="text-xl font-bold text-slate-900 mt-5 mb-3">$1</h1>')
+                .replace(/^- (.+)$/gm, '<li class="ml-4 text-sm text-slate-700 mb-1">• $1</li>')
+                .replace(/^\d+\. (.+)$/gm, '<li class="ml-4 text-sm text-slate-700 mb-1">$1</li>')
+                .replace(/`(.+?)`/g, '<code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs font-mono">$1</code>')
+                .replace(/\n\n/g, '<br><br>')
+                .replace(/\n/g, '<br>');
+        }
+
+        // ==========================================
+        // ABRIR MODAL DE ANÁLISE (PRINCIPAL)
+        // ==========================================
         function openAnalysisModal() {
             if (tasks.length === 0) {
                 alert("Não existem tarefas para analisar.");
@@ -852,7 +1898,6 @@
                 if (t.completed) dayStats[t.date].completed += dur;
 
                 // Stats por Tag
-                // Se a tarefa não tem tag, podemos agrupá-la em "#SemEtiqueta"
                 const tagsToProcess = t.tags.length > 0 ? t.tags : ['#SemEtiqueta'];
                 tagsToProcess.forEach(tag => {
                     if (!tagStats[tag]) tagStats[tag] = { total: 0, completed: 0 };
@@ -863,7 +1908,7 @@
 
             const efficiency = totalMins === 0 ? 0 : Math.round((completedMins / totalMins) * 100);
 
-            // 1. Atualizar Visão Geral
+            // 1. Atualizar Cards KPI
             document.getElementById('an-total-hours').innerText = formatMinutes(totalMins);
             document.getElementById('an-completed-hours').innerText = formatMinutes(completedMins);
             document.getElementById('an-pending-hours').innerText = formatMinutes(totalMins - completedMins);
@@ -872,18 +1917,12 @@
             // 2. Renderizar Tags
             const tagsContainer = document.getElementById('an-tags-container');
             tagsContainer.innerHTML = '';
-
-            // Ordenar tags por volume total de horas investidas (maior para menor)
             const sortedTags = Object.keys(tagStats).sort((a, b) => tagStats[b].total - tagStats[a].total);
 
             sortedTags.forEach(tag => {
                 const stats = tagStats[tag];
                 const pct = stats.total === 0 ? 0 : Math.round((stats.completed / stats.total) * 100);
-
-                let colorClass = 'bg-primary';
-                if (pct < 50) colorClass = 'bg-danger';
-                else if (pct < 80) colorClass = 'bg-warning';
-                else colorClass = 'bg-success';
+                let colorClass = pct < 50 ? 'bg-danger' : pct < 80 ? 'bg-warning' : 'bg-success';
 
                 tagsContainer.innerHTML += `
                     <div class="bg-white p-3 rounded-lg border border-slate-100 shadow-sm">
@@ -907,9 +1946,8 @@
             sortedDates.forEach(dateStr => {
                 const stats = dayStats[dateStr];
                 const pct = stats.total === 0 ? 0 : Math.round((stats.completed / stats.total) * 100);
-                const dateObj = new Date(dateStr + 'T00:00:00');
-                const dayName = daysOfWeek[dateObj.getDay()];
-                const formattedDate = `${dateStr.split('-')[2]}/${dateStr.split('-')[1]}`;
+                const dayName = safeDayName(dateStr);
+                const formattedDate = safeFormattedDate(dateStr);
 
                 daysContainer.innerHTML += `
                     <div class="flex items-center gap-4 bg-white p-3 rounded-lg border border-slate-100 shadow-sm">
@@ -929,7 +1967,20 @@
                 `;
             });
 
+            // 4. Renderizar Gráficos
+            // Delay to let modal DOM become visible first
+            setTimeout(() => renderCharts(dayStats, tagStats, totalMins, completedMins), 100);
+
+            // 5. Reset AI tab
+            document.getElementById('ai-response').classList.add('hidden');
+            document.getElementById('ai-error').classList.add('hidden');
+            document.getElementById('ai-loading').classList.add('hidden');
+
+            // 6. Reset to first tab
+            switchAnalysisTab('overview');
+
             openModal('analysisModal');
+            lucide.createIcons();
         }
 
         // ==========================================
@@ -943,20 +1994,19 @@
             const sortedDates = Object.keys(groupedTasks).sort();
 
             sortedDates.forEach(dateStr => {
-                const dateObj = new Date(dateStr + 'T00:00:00');
-                const dayName = daysOfWeek[dateObj.getDay()];
-                const formattedDate = `${dateStr.split('-')[2]}/${dateStr.split('-')[1]}`;
+                const dayName = safeDayName(dateStr);
+                const formattedDate = safeFormattedDate(dateStr);
 
                 const dayBlock = document.createElement('div');
                 dayBlock.className = 'flex flex-col gap-3';
 
                 const header = document.createElement('h3');
-                header.className = 'text-sm font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 pb-2 flex items-center justify-between';
-                header.innerHTML = `<span>${dayName} <span class="font-normal text-slate-400 ml-1">(${formattedDate})</span></span>`;
+                header.className = 'day-header-custom text-sm font-bold text-slate-700 uppercase tracking-wider flex items-center justify-between';
+                header.innerHTML = `<div class="flex items-center gap-2"><span class="day-header-dot"></span>${dayName}</div><span class="text-xs font-normal text-slate-400 normal-case tracking-normal">${formattedDate}</span>`;
                 dayBlock.appendChild(header);
 
                 const taskList = document.createElement('div');
-                taskList.className = 'flex flex-col gap-2 task-list-container min-h-[50px]';
+                taskList.className = 'flex flex-col gap-3 task-list-container min-h-[60px]';
                 taskList.dataset.date = dateStr;
 
                 groupedTasks[dateStr].forEach(task => {
@@ -981,20 +2031,19 @@
             const sortedDates = Object.keys(groupedTasks).sort();
 
             sortedDates.forEach(dateStr => {
-                const dateObj = new Date(dateStr + 'T00:00:00');
-                const dayName = daysOfWeek[dateObj.getDay()];
-                const formattedDate = `${dateStr.split('-')[2]}/${dateStr.split('-')[1]}`;
+                const dayName = safeDayName(dateStr);
+                const formattedDate = safeFormattedDate(dateStr);
 
                 // Coluna do Dia
                 const col = document.createElement('div');
-                col.className = 'flex flex-col bg-slate-50/80 border border-slate-200 rounded-xl w-72 flex-shrink-0 overflow-hidden shadow-sm';
+                col.className = 'flex flex-col bg-white/80 border border-slate-200/80 rounded-2xl w-72 flex-shrink-0 overflow-hidden shadow-sm hover:shadow-md transition-shadow';
 
                 // Cabeçalho da Coluna
                 const header = document.createElement('div');
-                header.className = 'bg-slate-100 border-b border-slate-200 px-4 py-3 text-center';
+                header.className = 'bg-gradient-to-r from-primary/5 to-transparent border-b border-slate-100 px-4 py-4 text-center';
                 header.innerHTML = `
-                    <h3 class="font-bold text-slate-700">${dayName}</h3>
-                    <p class="text-xs text-slate-500 font-medium">${formattedDate}</p>
+                    <h3 class="font-bold text-slate-800 flex items-center justify-center gap-2"><span class="day-header-dot"></span>${dayName}</h3>
+                    <p class="text-xs text-slate-500 font-medium mt-1">${formattedDate}</p>
                 `;
                 col.appendChild(header);
 
@@ -1019,30 +2068,30 @@
         // ==========================================
         function createListCard(task) {
             const el = document.createElement('div');
-            el.className = `task-card bg-surface border border-slate-200 rounded-lg p-4 shadow-sm flex items-center gap-4 transition-all ${task.completed ? 'completed bg-slate-50' : ''}`;
+            el.className = `task-card bg-surface border border-slate-200/80 rounded-xl p-4 flex items-center gap-4 transition-all ${task.completed ? 'completed bg-slate-50/50' : 'shadow-sm'}`;
             el.dataset.id = task.id;
 
-            const tagsHtml = task.tags.map(tag => `<span class="inline-block bg-slate-100 text-slate-600 text-[10px] px-2 py-0.5 rounded font-medium">${tag}</span>`).join(' ');
+            const tagsHtml = task.tags.map(tag => `<span class="inline-block bg-slate-100 text-slate-600 text-[10px] px-2 py-0.5 rounded font-semibold border border-slate-200">${tag}</span>`).join(' ');
 
             el.innerHTML = `
-                <div class="cursor-grab text-slate-300 hover:text-slate-500 drag-handle hidden sm:block">
+                <div class="cursor-grab text-slate-300 hover:text-slate-500 drag-handle hidden sm:flex flex-col items-center justify-center w-6 h-full">
                     <i data-lucide="grip-vertical" class="w-5 h-5"></i>
                 </div>
-                <button onclick="toggleTask('${task.id}')" class="flex-shrink-0 w-6 h-6 rounded border-2 flex items-center justify-center transition-colors ${task.completed ? 'bg-success border-success text-white' : 'border-slate-300 hover:border-primary text-transparent'}">
-                    <i data-lucide="check" class="w-4 h-4"></i>
+                <button onclick="toggleTask('${task.id}')" class="flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${task.completed ? 'bg-success border-success text-white shadow-sm' : 'border-slate-300 hover:border-primary hover:scale-110 text-transparent'}">
+                    <i data-lucide="check" class="w-3.5 h-3.5"></i>
                 </button>
                 <div class="flex-grow min-w-0">
-                    <div class="flex items-center gap-2 mb-1">
-                        <span class="text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">${task.startTime} - ${task.endTime}</span>
+                    <div class="flex items-center gap-2 mb-1.5">
+                        <span class="inline-flex items-center gap-1 text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded">
+                            <i data-lucide="clock" class="w-3 h-3"></i> ${task.startTime} - ${task.endTime}
+                        </span>
                     </div>
-                    <h4 class="task-title text-slate-800 font-medium truncate">${task.title}</h4>
-                    <div class="mt-1 flex gap-1 flex-wrap">
-                        ${tagsHtml}
-                    </div>
+                    <h4 class="task-title text-slate-800 font-semibold truncate">${task.title}</h4>
+                    ${tagsHtml ? `<div class="mt-2 flex gap-1.5 flex-wrap">${tagsHtml}</div>` : ''}
                 </div>
-                <div class="task-actions sm:opacity-0 transition-opacity flex items-center gap-1 sm:gap-2 flex-shrink-0">
-                    <button onclick="editTask('${task.id}')" class="p-1.5 text-slate-400 hover:text-primary hover:bg-blue-50 rounded transition-colors"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
-                    <button onclick="deleteTask('${task.id}')" class="p-1.5 text-slate-400 hover:text-danger hover:bg-red-50 rounded transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                <div class="task-actions sm:opacity-0 transition-opacity flex items-center gap-1 flex-shrink-0">
+                    <button onclick="editTask('${task.id}')" class="p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
+                    <button onclick="deleteTask('${task.id}')" class="p-2 text-slate-400 hover:text-danger hover:bg-danger/10 rounded-lg transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                 </div>
             `;
             return el;
@@ -1050,27 +2099,27 @@
 
         function createCalendarCard(task) {
             const el = document.createElement('div');
-            el.className = `task-card cursor-grab bg-white border ${task.completed ? 'border-success/30 bg-success/5' : 'border-slate-200 hover:border-primary/50'} rounded-lg p-3 shadow-sm flex flex-col gap-2 transition-all relative group`;
+            el.className = `task-card cursor-grab bg-white border ${task.completed ? 'border-success/30 bg-success/5' : 'border-slate-200/80 hover:border-primary/50'} rounded-xl p-3 shadow-sm flex flex-col gap-2 transition-all relative group`;
             el.dataset.id = task.id;
 
-            const tagsHtml = task.tags.map(tag => `<span class="inline-block bg-slate-100 text-slate-600 text-[10px] px-1.5 py-0.5 rounded font-medium">${tag}</span>`).join(' ');
+            const tagsHtml = task.tags.map(tag => `<span class="inline-block bg-slate-100 text-slate-600 text-[10px] px-1.5 py-0.5 rounded font-semibold border border-slate-200">${tag}</span>`).join(' ');
 
             el.innerHTML = `
                 <div class="flex justify-between items-start">
-                    <span class="text-[11px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded flex items-center gap-1">
+                    <span class="inline-flex items-center gap-1 text-[11px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded">
                         <i data-lucide="clock" class="w-3 h-3"></i> ${task.startTime} - ${task.endTime}
                     </span>
-                    <button onclick="toggleTask('${task.id}')" class="flex-shrink-0 w-5 h-5 rounded border flex items-center justify-center transition-colors ${task.completed ? 'bg-success border-success text-white' : 'border-slate-300 hover:border-primary text-transparent'}">
+                    <button onclick="toggleTask('${task.id}')" class="flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${task.completed ? 'bg-success border-success text-white' : 'border-slate-300 hover:border-primary text-transparent hover:scale-110'}">
                         <i data-lucide="check" class="w-3 h-3"></i>
                     </button>
                 </div>
                 <h4 class="text-sm font-semibold text-slate-800 leading-tight pr-2 ${task.completed ? 'line-through opacity-60' : ''}">${task.title}</h4>
-                ${tagsHtml ? `<div class="flex flex-wrap gap-1 mt-1">${tagsHtml}</div>` : ''}
+                ${tagsHtml ? `<div class="flex flex-wrap gap-1">${tagsHtml}</div>` : ''}
                 
                 <!-- Overlay de Ações (Aparece no Hover) -->
-                <div class="absolute inset-0 bg-slate-900/5 backdrop-blur-[1px] opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center gap-2 pointer-events-none">
-                    <button onclick="editTask('${task.id}')" class="pointer-events-auto bg-white p-2 rounded-md shadow-md text-slate-600 hover:text-primary hover:bg-slate-50 transition-colors"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
-                    <button onclick="deleteTask('${task.id}')" class="pointer-events-auto bg-white p-2 rounded-md shadow-md text-slate-600 hover:text-danger hover:bg-slate-50 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                <div class="absolute inset-0 bg-slate-900/5 backdrop-blur-[1px] opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center gap-2 pointer-events-none">
+                    <button onclick="editTask('${task.id}')" class="pointer-events-auto bg-white p-2 rounded-lg shadow-md text-slate-600 hover:text-primary hover:bg-primary/10 transition-colors"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
+                    <button onclick="deleteTask('${task.id}')" class="pointer-events-auto bg-white p-2 rounded-lg shadow-md text-slate-600 hover:text-danger hover:bg-danger/10 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                 </div>
             `;
             return el;
@@ -1336,8 +2385,18 @@
             }, 3000);
         }
 
+        // ── BOTTOM NAV SYNC ──
+        function setBottomNav(view) {
+            const bList = document.getElementById('bnav-list');
+            const bCal  = document.getElementById('bnav-cal');
+            if (!bList || !bCal) return;
+            bList.classList.toggle('active', view === 'list');
+            bCal.classList.toggle('active', view === 'calendar');
+        }
+
         // Inicializar
         window.onload = initApp;
+
 
     </script>
 </body>

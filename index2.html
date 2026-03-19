@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planner de Alta Performance</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- SortableJS para Drag and Drop -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <!-- Chart.js para Gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563eb',
+                        secondary: '#475569',
+                        success: '#16a34a',
+                        warning: '#ea580c',
+                        danger: '#dc2626',
+                        background: '#f8fafc',
+                        surface: '#ffffff'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        .sortable-ghost {
+            opacity: 0.4;
+            background-color: #e2e8f0;
+            border: 2px dashed #94a3b8;
+        }
+
+        .sortable-drag {
+            cursor: grabbing !important;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .task-card:hover .task-actions {
+            opacity: 1;
+        }
+
+        .task-card.completed {
+            opacity: 0.6;
+        }
+
+        .task-card.completed .task-title {
+            text-decoration: line-through;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .calendar-scroll {
+            scrollbar-width: thin;
+        }
+
+        /* Loading spinner para IA */
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #2563eb;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Print styles */
+        @media print {
+            body * { visibility: hidden; }
+            #print-area, #print-area * { visibility: visible; }
+            #print-area { position: absolute; left: 0; top: 0; width: 100%; padding: 2rem; }
+        }
+
+        /* Chat bubbles */
+        .chat-bubble-user {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            color: white;
+            border-radius: 1rem 1rem 0.25rem 1rem;
+            padding: 0.75rem 1rem;
+            max-width: 80%;
+            align-self: flex-end;
+        }
+        .chat-bubble-ai {
+            background: #f1f5f9;
+            color: #1e293b;
+            border-radius: 1rem 1rem 1rem 0.25rem;
+            padding: 0.75rem 1rem;
+            max-width: 80%;
+            align-self: flex-start;
+        }
+    </style>
+</head>
+
+<body class="text-slate-800 antialiased min-h-screen flex flex-col">
+
+    <!-- Navbar -->
+    <nav class="bg-surface border-b border-slate-200 sticky top-0 z-10 shadow-sm">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <i data-lucide="calendar-check" class="text-primary w-6 h-6"></i>
+                <h1 class="font-bold text-xl tracking-tight text-slate-900">Planeamento <span
+                        class="text-primary">Estratégico</span></h1>
+            </div>
+            <div class="flex items-center gap-2 sm:gap-4">
+                <button onclick="openModal('importModal')"
+                    class="text-sm font-medium text-slate-600 hover:text-primary transition-colors flex items-center gap-1">
+                    <i data-lucide="download" class="w-4 h-4"></i> <span class="hidden sm:inline">Importar</span>
+                </button>
+                <button onclick="prepareExport()"
+                    class="text-sm font-medium text-slate-600 hover:text-primary transition-colors flex items-center gap-1">
+                    <i data-lucide="upload" class="w-4 h-4"></i> <span class="hidden sm:inline">Exportar</span>
+                </button>
+                <div class="w-px h-6 bg-slate-200 mx-1"></div>
+                <button onclick="openTaskModal()"
+                    class="bg-primary hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
+                    <i data-lucide="plus" class="w-4 h-4"></i> Novo Bloco
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-8">
+
+        <!-- Placar de Disciplina -->
+        <section class="bg-surface rounded-xl border border-slate-200 shadow-sm p-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                <h2 class="text-lg font-semibold flex items-center gap-2 text-slate-800">
+                    <i data-lucide="bar-chart-2" class="w-5 h-5 text-secondary"></i> Painel de Execução
+                </h2>
+                <div class="flex items-center gap-4">
+                    <button onclick="openAnalysisModal()"
+                        class="text-sm font-medium text-primary hover:text-blue-800 transition-colors flex items-center gap-1 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 shadow-sm">
+                        <i data-lucide="activity" class="w-4 h-4"></i> Relatório Completo
+                    </button>
+                    <span id="completion-percentage" class="text-2xl font-bold text-primary">0%</span>
+                </div>
+            </div>
+
+            <div class="w-full bg-slate-100 rounded-full h-3 mb-6 overflow-hidden">
+                <div id="progress-bar" class="bg-primary h-3 rounded-full transition-all duration-500 ease-out"
+                    style="width: 0%"></div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-4 text-center">
+                <div class="bg-slate-50 rounded-lg p-3 border border-slate-100">
+                    <p class="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1">Total</p>
+                    <p id="stat-total" class="text-xl font-semibold text-slate-800">0</p>
+                </div>
+                <div class="bg-green-50 rounded-lg p-3 border border-green-100">
+                    <p class="text-xs text-green-600 font-medium uppercase tracking-wider mb-1">Concluídas</p>
+                    <p id="stat-completed" class="text-xl font-semibold text-green-700">0</p>
+                </div>
+                <div class="bg-orange-50 rounded-lg p-3 border border-orange-100">
+                    <p class="text-xs text-orange-600 font-medium uppercase tracking-wider mb-1">Pendentes</p>
+                    <p id="stat-pending" class="text-xl font-semibold text-orange-700">0</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Controlos de Visualização -->
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 -mb-2">
+            <h2 class="text-xl font-bold text-slate-800">A Minha Agenda</h2>
+            <div class="flex bg-slate-200/60 p-1 rounded-lg w-max">
+                <button id="btn-view-list" onclick="setView('list')"
+                    class="px-4 py-1.5 text-sm font-semibold rounded-md bg-white shadow-sm text-slate-800 transition-all flex items-center gap-2">
+                    <i data-lucide="list" class="w-4 h-4"></i> Lista
+                </button>
+                <button id="btn-view-cal" onclick="setView('calendar')"
+                    class="px-4 py-1.5 text-sm font-semibold rounded-md text-slate-500 hover:text-slate-800 transition-all flex items-center gap-2">
+                    <i data-lucide="layout-grid" class="w-4 h-4"></i> Calendário
+                </button>
+            </div>
+        </div>
+
+        <!-- Estado Vazio -->
+        <div class="text-center py-12 text-slate-400 hidden" id="empty-state">
+            <i data-lucide="inbox" class="w-12 h-12 mx-auto mb-3 opacity-50"></i>
+            <p>Nenhuma tarefa no sistema.</p>
+            <p class="text-sm mt-1">Clique em "Importar" para colar o seu plano ou adicione manualmente.</p>
+        </div>
+
+        <section id="agenda-container" class="flex flex-col gap-8 pb-12"></section>
+        <section id="calendar-container" class="hidden pb-12 overflow-x-auto calendar-scroll">
+            <div id="calendar-grid" class="flex gap-4 min-w-max items-start"></div>
+        </section>
+
+    </main>
+
+    <!-- Modal de Importação -->
+    <div id="importModal"
+        class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity">
+        <div
+            class="bg-surface rounded-xl shadow-xl w-full max-w-2xl overflow-hidden transform scale-95 transition-transform duration-200">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 class="font-semibold text-lg flex items-center gap-2"><i data-lucide="download" class="w-5 h-5"></i>
+                    Importar</h3>
+                <button onclick="closeModal('importModal')"
+                    class="text-slate-400 hover:text-slate-600 transition-colors"><i data-lucide="x"
+                        class="w-5 h-5"></i></button>
+            </div>
+            <div class="p-6">
+                <textarea id="importTextarea" rows="10"
+                    class="w-full border border-slate-300 rounded-lg p-3 text-sm font-mono focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
+                    placeholder="Cole seu planejamento aqui..."></textarea>
+            </div>
+            <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+                <button onclick="closeModal('importModal')"
+                    class="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-200 rounded-lg transition-colors">Cancelar</button>
+                <button onclick="executeImport()"
+                    class="px-4 py-2 text-sm font-medium bg-primary text-white hover:bg-blue-700 rounded-lg transition-colors shadow-sm">Processar
+                    Importação</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Exportação -->
+    <div id="exportModal"
+        class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity">
+        <div
+            class="bg-surface rounded-xl shadow-xl w-full max-w-2xl overflow-hidden transform scale-95 transition-transform duration-200">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 class="font-semibold text-lg flex items-center gap-2"><i data-lucide="upload" class="w-5 h-5"></i>
+                    Exportar</h3>
+                <button onclick="closeModal('exportModal')"
+                    class="text-slate-400 hover:text-slate-600 transition-colors"><i data-lucide="x"
+                        class="w-5 h-5"></i></button>
+            </div>
+            <div class="p-6">
+                <textarea id="exportTextarea" rows="10" readonly
+                    class="w-full border border-slate-300 rounded-lg p-3 text-sm font-mono bg-slate-50 focus:outline-none"></textarea>
+            </div>
+            <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+                <button onclick="closeModal('exportModal')"
+                    class="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-200 rounded-lg transition-colors">Fechar</button>
+                <button onclick="copyExport()"
+                    class="px-4 py-2 text-sm font-medium bg-primary text-white hover:bg-blue-700 rounded-lg transition-colors shadow-sm flex items-center gap-2">
+                    <i data-lucide="copy" class="w-4 h-4"></i> Copiar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Análise Detalhada -->
+    <div id="analysisModal"
+        class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity">
+        <div
+            class="bg-surface rounded-xl shadow-xl w-full max-w-4xl overflow-hidden transform scale-95 transition-transform duration-200 max-h-[90vh] flex flex-col">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 class="font-semibold text-lg flex items-center gap-2"><i data-lucide="brain-circuit"
+                        class="w-5 h-5 text-primary"></i> Relatório & Diagnóstico</h3>
+                <button onclick="closeModal('analysisModal')"
+                    class="text-slate-400 hover:text-slate-600 transition-colors"><i data-lucide="x"
+                        class="w-5 h-5"></i></button>
+            </div>
+
+            <div class="p-6 overflow-y-auto flex-grow flex flex-col gap-6 bg-slate-50/50">
+
+                <!-- Visão Geral em Tempo -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+                        <p class="text-xs font-semibold text-slate-500 uppercase">Horas Planeadas</p>
+                        <p id="an-total-hours" class="text-xl font-bold text-slate-800 mt-1">0h</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+                        <p class="text-xs font-semibold text-green-600 uppercase">Executadas</p>
+                        <p id="an-completed-hours" class="text-xl font-bold text-green-700 mt-1">0h</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+                        <p class="text-xs font-semibold text-orange-600 uppercase">Défice</p>
+                        <p id="an-pending-hours" class="text-xl font-bold text-orange-700 mt-1">0h</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+                        <p class="text-xs font-semibold text-primary uppercase">Eficiência</p>
+                        <p id="an-efficiency" class="text-xl font-bold text-primary mt-1">0%</p>
+                    </div>
+                </div>
+
+                <!-- Painel de IA (Gemini) -->
+                <div
+                    class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-xl p-5 shadow-inner">
+                    <div class="flex items-center justify-between mb-3">
+                        <h4 class="text-sm font-bold text-indigo-900 flex items-center gap-2">
+                            <i data-lucide="sparkles" class="w-4 h-4 text-indigo-600"></i> Mentor IA
+                        </h4>
+                        <div class="flex items-center gap-2">
+                            <!-- Period Selector -->
+                            <div class="flex bg-white border border-indigo-200 rounded-md p-0.5 text-xs">
+                                <button id="btn-period-today" onclick="setAIPeriod('today')"
+                                    class="px-2.5 py-1 rounded font-medium transition-all text-slate-500 hover:text-indigo-700">
+                                    Hoje
+                                </button>
+                                <button id="btn-period-week" onclick="setAIPeriod('week')"
+                                    class="px-2.5 py-1 rounded font-medium transition-all bg-indigo-600 text-white">
+                                    Semana
+                                </button>
+                            </div>
+                            <button id="btn-run-ai" onclick="runGeminiAnalysis()"
+                                class="px-3 py-1.5 text-xs font-medium bg-indigo-600 text-white hover:bg-indigo-700 rounded-md transition-colors shadow-sm flex items-center gap-1">
+                                Gerar Diagnóstico
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="ai-insights-container"
+                        class="text-sm text-slate-700 space-y-3 min-h-[60px] flex items-center justify-center border border-dashed border-indigo-200 rounded-lg p-4 bg-white/50">
+                        <span class="text-slate-400 italic text-center">Selecione o período e clique em "Gerar Diagnóstico" para invocar o Mentor IA.</span>
+                    </div>
+
+                    <!-- Action Buttons (hidden until report is generated) -->
+                    <div id="ai-action-bar" class="hidden flex items-center gap-2 mt-3 pt-3 border-t border-indigo-100">
+                        <button onclick="printReport()"
+                            class="px-3 py-1.5 text-xs font-medium bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-md transition-colors shadow-sm flex items-center gap-1">
+                            <i data-lucide="printer" class="w-3.5 h-3.5"></i> Imprimir
+                        </button>
+                        <button onclick="exportToMarkdown()"
+                            class="px-3 py-1.5 text-xs font-medium bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-md transition-colors shadow-sm flex items-center gap-1">
+                            <i data-lucide="file-down" class="w-3.5 h-3.5"></i> Exportar .md
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Chat Section (hidden until report is generated) -->
+                <div id="ai-chat-section" class="hidden bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+                    <div class="px-4 py-3 bg-slate-50 border-b border-slate-100 flex items-center gap-2">
+                        <i data-lucide="message-circle" class="w-4 h-4 text-indigo-600"></i>
+                        <h4 class="text-sm font-bold text-slate-700">Conversar sobre o Relatório</h4>
+                    </div>
+                    <div id="chat-messages" class="p-4 flex flex-col gap-3 max-h-[250px] overflow-y-auto">
+                        <div class="chat-bubble-ai text-sm">Relatório gerado. Pode fazer perguntas sobre a sua produtividade — por exemplo: <em>"Como posso melhorar a minha terça-feira?"</em></div>
+                    </div>
+                    <div class="p-3 border-t border-slate-100 flex gap-2">
+                        <input id="chat-input" type="text" placeholder="Escreva a sua pergunta..."
+                            class="flex-grow border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400"
+                            onkeydown="if(event.key==='Enter') sendChatMessage()">
+                        <button onclick="sendChatMessage()"
+                            class="px-4 py-2 text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 rounded-lg transition-colors shadow-sm flex items-center gap-1">
+                            <i data-lucide="send" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Gráficos e Tags -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Gráfico de Rosca -->
+                    <div
+                        class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex flex-col items-center justify-center">
+                        <h4 class="text-sm font-bold text-slate-700 w-full mb-4">Distribuição do Tempo (Horas)</h4>
+                        <div class="w-full max-w-[240px]">
+                            <canvas id="tagsChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Progresso por Tag -->
+                    <div
+                        class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex flex-col h-full max-h-[300px] overflow-y-auto custom-scrollbar">
+                        <h4
+                            class="text-sm font-bold text-slate-700 mb-4 sticky top-0 bg-white pb-2 border-b border-slate-100">
+                            Desempenho por Categoria</h4>
+                        <div id="an-tags-container" class="flex flex-col gap-3"></div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="p-4 bg-white border-t border-slate-100 flex justify-end">
+                <button onclick="closeModal('analysisModal')"
+                    class="px-5 py-2 text-sm font-medium bg-slate-800 text-white hover:bg-slate-700 rounded-lg transition-colors shadow-sm">Fechar
+                    Relatório</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Tarefa -->
+    <div id="taskModal"
+        class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity">
+        <div
+            class="bg-surface rounded-xl shadow-xl w-full max-w-md overflow-hidden transform scale-95 transition-transform duration-200">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 id="taskModalTitle" class="font-semibold text-lg">Nova Tarefa</h3>
+                <button onclick="closeModal('taskModal')"
+                    class="text-slate-400 hover:text-slate-600 transition-colors"><i data-lucide="x"
+                        class="w-5 h-5"></i></button>
+            </div>
+            <div class="p-6 flex flex-col gap-4">
+                <input type="hidden" id="taskId">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Título</label>
+                    <input type="text" id="taskTitle"
+                        class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Data</label>
+                        <input type="date" id="taskDate"
+                            class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Tags</label>
+                        <input type="text" id="taskTags"
+                            class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Início</label>
+                        <input type="time" id="taskStartTime"
+                            class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Fim</label>
+                        <input type="time" id="taskEndTime"
+                            class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none">
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+                <button onclick="closeModal('taskModal')"
+                    class="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-200 rounded-lg">Cancelar</button>
+                <button onclick="saveTask()"
+                    class="px-4 py-2 text-sm font-medium bg-primary text-white hover:bg-blue-700 rounded-lg">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast"
+        class="fixed bottom-4 right-4 bg-slate-800 text-white px-4 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-50 flex items-center gap-2">
+        <i data-lucide="info" class="w-5 h-5 text-blue-400"></i>
+        <span id="toastMessage" class="text-sm font-medium">Notificação</span>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        let tasks = [];
+        let sortableInstances = [];
+        let currentView = 'list';
+        let chartInstance = null;
+        let lastAnalysisStats = null;
+        let aiPeriod = 'week'; // 'today' or 'week'
+        let chatHistory = []; // stores {role, text} for AI context
+        let lastAIReportText = ''; // raw text of last AI report
+        const daysOfWeek = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+
+        // ==========================================
+        // INTEGRAÇÃO GEMINI API (MÉTODO RESILIENTE)
+        // ==========================================
+
+        const apiKey = "AIzaSyBCx1DY0-GqIjgR1yCJ-hLSlwA-kV-Kbhs"; // A chave é injetada em runtime pelo ambiente
+
+        // Função utilitária de fetch com Exponential Backoff para lidar com Rate Limits (429)
+        async function fetchWithRetry(url, options, retries = 5) {
+            const delays = [1000, 2000, 4000, 8000, 16000]; // Espera progressiva
+
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (!response.ok) {
+                        if (response.status === 429) {
+                            console.warn(`Quota excedida. Tentativa ${i + 1}/${retries}. Aguardando ${delays[i]}ms...`);
+                            if (i < retries - 1) {
+                                await new Promise(resolve => setTimeout(resolve, delays[i]));
+                                continue;
+                            }
+                        }
+                        throw new Error(`Erro na API (Status: ${response.status})`);
+                    }
+                    return await response.json();
+                } catch (error) {
+                    if (i === retries - 1) throw error;
+                    console.warn(`Erro de rede. Tentativa ${i + 1}. Retentando...`);
+                    await new Promise(resolve => setTimeout(resolve, delays[i]));
+                }
+            }
+        }
+
+        function setAIPeriod(period) {
+            aiPeriod = period;
+            const btnToday = document.getElementById('btn-period-today');
+            const btnWeek = document.getElementById('btn-period-week');
+            const active = 'px-2.5 py-1 rounded font-medium transition-all bg-indigo-600 text-white';
+            const inactive = 'px-2.5 py-1 rounded font-medium transition-all text-slate-500 hover:text-indigo-700';
+            btnToday.className = period === 'today' ? active : inactive;
+            btnWeek.className = period === 'week' ? active : inactive;
+        }
+
+        function getFilteredTasks() {
+            const todayStr = new Date().toISOString().split('T')[0];
+            if (aiPeriod === 'today') {
+                return tasks.filter(t => t.date === todayStr);
+            }
+            // Last 7 days
+            const sevenDaysAgo = new Date();
+            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+            const startStr = sevenDaysAgo.toISOString().split('T')[0];
+            return tasks.filter(t => t.date >= startStr && t.date <= todayStr);
+        }
+
+        function buildStatsForAI(filteredTasks) {
+            let totalMins = 0, completedMins = 0;
+            let tagStats = {}, dayStats = {};
+
+            filteredTasks.forEach(t => {
+                const dur = calculateDurationInMinutes(t.startTime, t.endTime);
+                totalMins += dur;
+                if (t.completed) completedMins += dur;
+
+                if (!dayStats[t.date]) dayStats[t.date] = { totalMins: 0, completedMins: 0 };
+                dayStats[t.date].totalMins += dur;
+                if (t.completed) dayStats[t.date].completedMins += dur;
+
+                const tagsToProcess = t.tags.length > 0 ? t.tags : ['#SemEtiqueta'];
+                tagsToProcess.forEach(tag => {
+                    if (!tagStats[tag]) tagStats[tag] = { totalMins: 0, completedMins: 0 };
+                    tagStats[tag].totalMins += dur;
+                    if (t.completed) tagStats[tag].completedMins += dur;
+                });
+            });
+
+            const efficiency = totalMins === 0 ? 0 : Math.round((completedMins / totalMins) * 100);
+            return {
+                efficiency,
+                totalHoursFormatted: formatMinutes(totalMins),
+                completedHoursFormatted: formatMinutes(completedMins),
+                tagStats: Object.keys(tagStats).reduce((acc, tag) => {
+                    acc[tag] = {
+                        planeado: formatMinutes(tagStats[tag].totalMins),
+                        executado: formatMinutes(tagStats[tag].completedMins),
+                        taxa: (tagStats[tag].totalMins === 0 ? 0 : Math.round((tagStats[tag].completedMins / tagStats[tag].totalMins) * 100)) + '%'
+                    };
+                    return acc;
+                }, {}),
+                dayStats: Object.keys(dayStats).reduce((acc, day) => {
+                    acc[day] = {
+                        taxa: (dayStats[day].totalMins === 0 ? 0 : Math.round((dayStats[day].completedMins / dayStats[day].totalMins) * 100)) + '%'
+                    };
+                    return acc;
+                }, {})
+            };
+        }
+
+        function markdownToHTML(text) {
+            return text
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/^### (.*$)/gm, '<h4 class="font-bold text-slate-800 mt-3 mb-1">$1</h4>')
+                .replace(/^## (.*$)/gm, '<h3 class="font-bold text-slate-800 text-lg mt-4 mb-1">$1</h3>')
+                .replace(/^# (.*$)/gm, '<h2 class="font-bold text-slate-900 text-xl mt-4 mb-2">$1</h2>')
+                .replace(/^- (.*$)/gm, '<li class="ml-4 list-disc">$1</li>')
+                .replace(/\n/g, '<br/>');
+        }
+
+        async function runGeminiAnalysis() {
+            const filtered = getFilteredTasks();
+            if (filtered.length === 0) {
+                alert(aiPeriod === 'today' ? 'Não existem tarefas para hoje.' : 'Não existem tarefas nos últimos 7 dias.');
+                return;
+            }
+
+            const stats = buildStatsForAI(filtered);
+            lastAnalysisStats = stats;
+
+            const btn = document.getElementById('btn-run-ai');
+            const container = document.getElementById('ai-insights-container');
+
+            btn.disabled = true;
+            btn.innerHTML = `<span class="loader"></span> Analisando...`;
+            container.innerHTML = `<div class="w-full flex flex-col items-center justify-center py-4 space-y-3"><span class="loader"></span><span class="text-indigo-600 font-medium animate-pulse">O Mentor IA está a analisar as suas métricas...</span></div>`;
+
+            const periodLabel = aiPeriod === 'today' ? 'do dia de hoje' : 'dos últimos 7 dias';
+            const promptText = `
+Atue como um especialista em produtividade focado nas metodologias: GTD (David Allen), Deep Work (Cal Newport), Essencialismo (Greg McKeown) e Hábitos Atómicos (James Clear).
+Analise os dados ${periodLabel} e forneça um diagnóstico tático direto, sem clichês motivacionais.
+
+Dados da execução:
+- Período: ${periodLabel}
+- Eficiência Global: ${stats.efficiency}%
+- Total de Horas Planeadas: ${stats.totalHoursFormatted}
+- Total de Horas Concluídas: ${stats.completedHoursFormatted}
+- Estatísticas por Categoria (Tags): ${JSON.stringify(stats.tagStats)}
+- Estatísticas por Dia: ${JSON.stringify(stats.dayStats)}
+
+Regras para a resposta:
+1. Destaque um ponto forte real.
+2. Identifique o maior gargalo (a tag ou o dia com menor adesão).
+3. Sugira uma ação prática baseada num dos livros.
+4. Use formato de tópicos breves. Máximo de 3 parágrafos curtos.
+5. Responda em Português (PT).
+`;
+
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: [{ parts: [{ text: promptText }] }],
+                systemInstruction: { parts: [{ text: "Seja direto, técnico, analítico e fundamente-se na ciência da produtividade." }] }
+            };
+
+            try {
+                const result = await fetchWithRetry(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const aiResponseText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                if (aiResponseText) {
+                    lastAIReportText = aiResponseText;
+                    container.innerHTML = `<div class="text-slate-800 leading-relaxed">${markdownToHTML(aiResponseText)}</div>`;
+
+                    // Reset chat history with context
+                    chatHistory = [
+                        { role: 'user', text: promptText },
+                        { role: 'model', text: aiResponseText }
+                    ];
+
+                    // Show action bar & chat
+                    document.getElementById('ai-action-bar').classList.remove('hidden');
+                    document.getElementById('ai-chat-section').classList.remove('hidden');
+                    document.getElementById('chat-messages').innerHTML = `<div class="chat-bubble-ai text-sm">Relatório gerado! Pode perguntar-me qualquer coisa sobre a sua produtividade — por exemplo: <em>"Como posso melhorar a minha terça-feira?"</em></div>`;
+                    lucide.createIcons();
+                } else {
+                    throw new Error('Resposta da IA vazia ou mal formatada.');
+                }
+
+            } catch (error) {
+                console.error(error);
+                container.innerHTML = `
+                    <div class="text-red-600 flex items-start gap-2 bg-red-50 p-3 rounded-lg w-full border border-red-100">
+                        <i data-lucide="alert-circle" class="w-5 h-5 flex-shrink-0 mt-0.5"></i>
+                        <div>
+                            <strong>Falha ao contactar o Mentor IA.</strong><br/>
+                            <span class="text-xs">Tente novamente mais tarde. (${error.message})</span>
+                        </div>
+                    </div>`;
+                lucide.createIcons();
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `Gerar Diagnóstico`;
+            }
+        }
+
+        // ===== CHAT =====
+        async function sendChatMessage() {
+            const input = document.getElementById('chat-input');
+            const msg = input.value.trim();
+            if (!msg) return;
+
+            const chatBox = document.getElementById('chat-messages');
+            chatBox.innerHTML += `<div class="chat-bubble-user text-sm">${msg}</div>`;
+            input.value = '';
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            // Add loading
+            const loadingId = 'chat-loading-' + Date.now();
+            chatBox.innerHTML += `<div id="${loadingId}" class="chat-bubble-ai text-sm flex items-center gap-2"><span class="loader"></span> A pensar...</div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            chatHistory.push({ role: 'user', text: msg });
+
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: chatHistory.map(h => ({ role: h.role, parts: [{ text: h.text }] })),
+                systemInstruction: { parts: [{ text: 'Responda em Português (PT). Seja direto e prático. Baseie-se no relatório de produtividade já fornecido.' }] }
+            };
+
+            try {
+                const result = await fetchWithRetry(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const aiText = result.candidates?.[0]?.content?.parts?.[0]?.text || 'Sem resposta.';
+                chatHistory.push({ role: 'model', text: aiText });
+
+                const loadingEl = document.getElementById(loadingId);
+                if (loadingEl) loadingEl.remove();
+
+                chatBox.innerHTML += `<div class="chat-bubble-ai text-sm">${markdownToHTML(aiText)}</div>`;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            } catch (error) {
+                const loadingEl = document.getElementById(loadingId);
+                if (loadingEl) loadingEl.remove();
+                chatBox.innerHTML += `<div class="chat-bubble-ai text-sm text-red-600">Erro: ${error.message}</div>`;
+            }
+        }
+
+        // ===== PRINT =====
+        function printReport() {
+            if (!lastAIReportText) return;
+            const printWindow = window.open('', '_blank');
+            const periodLabel = aiPeriod === 'today' ? 'Hoje' : 'Últimos 7 dias';
+            printWindow.document.write(`
+                <html><head><title>Relatório IA — ${periodLabel}</title>
+                <style>body{font-family:Inter,system-ui,sans-serif;padding:2rem;color:#1e293b;line-height:1.7;max-width:800px;margin:auto}
+                h1{font-size:1.5rem;margin-bottom:0.5rem}h2{font-size:1.2rem}h3{font-size:1rem}
+                strong{font-weight:600}em{font-style:italic}li{margin-left:1.5rem;list-style:disc}
+                .meta{color:#64748b;font-size:0.85rem;margin-bottom:1.5rem;border-bottom:1px solid #e2e8f0;padding-bottom:0.75rem}
+                </style></head><body>
+                <h1>📊 Relatório de Produtividade — Mentor IA</h1>
+                <div class="meta">Período: ${periodLabel} | Eficiência: ${lastAnalysisStats?.efficiency ?? '-'}% | Gerado em: ${new Date().toLocaleString('pt-PT')}</div>
+                ${markdownToHTML(lastAIReportText)}
+                </body></html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        // ===== EXPORT MD =====
+        function exportToMarkdown() {
+            if (!lastAIReportText) return;
+            const periodLabel = aiPeriod === 'today' ? 'Hoje' : 'Últimos 7 dias';
+            const header = `# Relatório de Produtividade — Mentor IA\n\n**Período:** ${periodLabel}  \n**Eficiência:** ${lastAnalysisStats?.efficiency ?? '-'}%  \n**Gerado em:** ${new Date().toLocaleString('pt-PT')}\n\n---\n\n`;
+            const blob = new Blob([header + lastAIReportText], { type: 'text/markdown;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const dateStr = new Date().toISOString().split('T')[0];
+            a.download = `relatorio-ia-${dateStr}.md`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('Relatório exportado como .md');
+        }
+
+        // Nova função para atualizar o painel principal
+        function updateAnalysis() {
+            const total = tasks.length;
+            const completed = tasks.filter(t => t.completed).length;
+            const pending = total - completed;
+            const percentage = total === 0 ? 0 : Math.round((completed / total) * 100);
+
+            document.getElementById('stat-total').innerText = total;
+            document.getElementById('stat-completed').innerText = completed;
+            document.getElementById('stat-pending').innerText = pending;
+
+            document.getElementById('completion-percentage').innerText = `${percentage}%`;
+            document.getElementById('progress-bar').style.width = `${percentage}%`;
+
+            const progressBar = document.getElementById('progress-bar');
+            const pctText = document.getElementById('completion-percentage');
+            if (percentage < 33) {
+                progressBar.className = 'h-3 rounded-full transition-all duration-500 ease-out bg-danger';
+                pctText.className = 'text-2xl font-bold text-danger';
+            } else if (percentage < 66) {
+                progressBar.className = 'h-3 rounded-full transition-all duration-500 ease-out bg-warning';
+                pctText.className = 'text-2xl font-bold text-warning';
+            } else {
+                progressBar.className = 'h-3 rounded-full transition-all duration-500 ease-out bg-success';
+                pctText.className = 'text-2xl font-bold text-success';
+            }
+        }
+
+        function calculateDurationInMinutes(start, end) {
+            const [startH, startM] = start.split(':').map(Number);
+            const [endH, endM] = end.split(':').map(Number);
+            let diff = (endH * 60 + endM) - (startH * 60 + startM);
+            if (diff < 0) diff += 24 * 60;
+            return diff;
+        }
+
+        function formatMinutes(mins) {
+            const h = Math.floor(mins / 60);
+            const m = mins % 60;
+            if (h > 0 && m > 0) return `${h}h ${m}m`;
+            if (h > 0) return `${h}h`;
+            return `${m}m`;
+        }
+
+        function openAnalysisModal() {
+            if (tasks.length === 0) { alert("Não existem tarefas para analisar."); return; }
+
+            let totalMins = 0; let completedMins = 0;
+            let tagStats = {}; let dayStats = {};
+
+            tasks.forEach(t => {
+                const dur = calculateDurationInMinutes(t.startTime, t.endTime);
+                totalMins += dur;
+                if (t.completed) completedMins += dur;
+
+                if (!dayStats[t.date]) dayStats[t.date] = { totalMins: 0, completedMins: 0 };
+                dayStats[t.date].totalMins += dur;
+                if (t.completed) dayStats[t.date].completedMins += dur;
+
+                const tagsToProcess = t.tags.length > 0 ? t.tags : ['#SemEtiqueta'];
+                tagsToProcess.forEach(tag => {
+                    if (!tagStats[tag]) tagStats[tag] = { totalMins: 0, completedMins: 0 };
+                    tagStats[tag].totalMins += dur;
+                    if (t.completed) tagStats[tag].completedMins += dur;
+                });
+            });
+
+            const efficiency = totalMins === 0 ? 0 : Math.round((completedMins / totalMins) * 100);
+
+            // Resetar container IA e esconder chat/ações
+            document.getElementById('ai-insights-container').innerHTML = `<span class="text-slate-400 italic text-center text-sm w-full block">Selecione o período e clique em "Gerar Diagnóstico" para invocar o Mentor IA.</span>`;
+            document.getElementById('ai-action-bar').classList.add('hidden');
+            document.getElementById('ai-chat-section').classList.add('hidden');
+            chatHistory = [];
+            lastAIReportText = '';
+
+            // Set Stats UI
+            document.getElementById('an-total-hours').innerText = formatMinutes(totalMins);
+            document.getElementById('an-completed-hours').innerText = formatMinutes(completedMins);
+            document.getElementById('an-pending-hours').innerText = formatMinutes(totalMins - completedMins);
+            document.getElementById('an-efficiency').innerText = `${efficiency}%`;
+
+            // Renderizar Tags
+            const tagsContainer = document.getElementById('an-tags-container');
+            tagsContainer.innerHTML = '';
+            const sortedTags = Object.keys(tagStats).sort((a, b) => tagStats[b].totalMins - tagStats[a].totalMins);
+
+            const chartLabels = [];
+            const chartData = [];
+            const chartColors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#64748b', '#ec4899'];
+
+            sortedTags.forEach((tag) => {
+                const stats = tagStats[tag];
+                const pct = stats.totalMins === 0 ? 0 : Math.round((stats.completedMins / stats.totalMins) * 100);
+
+                chartLabels.push(tag);
+                chartData.push(parseFloat((stats.totalMins / 60).toFixed(1)));
+
+                let colorClass = pct < 50 ? 'bg-danger' : pct < 80 ? 'bg-warning' : 'bg-success';
+
+                tagsContainer.innerHTML += `
+                    <div class="bg-white p-3 rounded-lg border border-slate-100 shadow-sm text-sm">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-semibold text-slate-700">${tag}</span>
+                            <span class="text-xs font-medium text-slate-500">${formatMinutes(stats.completedMins)} / ${formatMinutes(stats.totalMins)}</span>
+                        </div>
+                        <div class="w-full bg-slate-100 rounded-full h-2">
+                            <div class="${colorClass} h-2 rounded-full transition-all" style="width: ${pct}%"></div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Renderizar Gráfico
+            if (chartInstance) { chartInstance.destroy(); }
+            const ctx = document.getElementById('tagsChart').getContext('2d');
+            chartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: { labels: chartLabels, datasets: [{ data: chartData, backgroundColor: chartColors, borderWidth: 1 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+
+            openModal('analysisModal');
+        }
+
+        function initApp() { renderApp(); }
+
+        function setView(view) {
+            currentView = view;
+            const active = 'px-4 py-1.5 text-sm font-semibold rounded-md bg-white shadow-sm text-slate-800 transition-all flex items-center gap-2';
+            const inactive = 'px-4 py-1.5 text-sm font-semibold rounded-md text-slate-500 hover:text-slate-800 transition-all flex items-center gap-2';
+            document.getElementById('btn-view-list').className = view === 'list' ? active : inactive;
+            document.getElementById('btn-view-cal').className = view === 'calendar' ? active : inactive;
+            renderApp();
+        }
+
+        function renderApp() {
+            updateAnalysis();
+            const emptyState = document.getElementById('empty-state');
+            const agenda = document.getElementById('agenda-container');
+            const cal = document.getElementById('calendar-container');
+
+            sortableInstances.forEach(i => i.destroy());
+            sortableInstances = [];
+
+            if (tasks.length === 0) {
+                emptyState.classList.remove('hidden');
+                agenda.classList.add('hidden');
+                cal.classList.add('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            if (currentView === 'list') { agenda.classList.remove('hidden'); cal.classList.add('hidden'); renderAgenda(); }
+            else { agenda.classList.add('hidden'); cal.classList.remove('hidden'); renderCalendar(); }
+            lucide.createIcons();
+        }
+
+        function renderAgenda() {
+            const container = document.getElementById('agenda-container');
+            container.innerHTML = '';
+            const grouped = getGroupedAndSortedTasks();
+            Object.keys(grouped).sort().forEach(dateStr => {
+                const dateObj = new Date(dateStr + 'T00:00:00');
+                const formattedDate = `${dateStr.split('-')[2]}/${dateStr.split('-')[1]}`;
+                const dayBlock = document.createElement('div');
+                dayBlock.className = 'flex flex-col gap-3';
+                dayBlock.innerHTML = `<h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 pb-2 flex items-center justify-between"><span>${daysOfWeek[dateObj.getDay()]} <span class="font-normal text-slate-400 ml-1">(${formattedDate})</span></span></h3>`;
+                const taskList = document.createElement('div');
+                taskList.className = 'flex flex-col gap-2 task-list-container min-h-[50px]';
+                taskList.dataset.date = dateStr;
+                grouped[dateStr].forEach(t => taskList.appendChild(createListCard(t)));
+                dayBlock.appendChild(taskList);
+                container.appendChild(dayBlock);
+                setupSortable(taskList);
+            });
+        }
+
+        function renderCalendar() {
+            const grid = document.getElementById('calendar-grid');
+            grid.innerHTML = '';
+            const grouped = getGroupedAndSortedTasks();
+            Object.keys(grouped).sort().forEach(dateStr => {
+                const dateObj = new Date(dateStr + 'T00:00:00');
+                const formattedDate = `${dateStr.split('-')[2]}/${dateStr.split('-')[1]}`;
+                const col = document.createElement('div');
+                col.className = 'flex flex-col bg-slate-50/80 border border-slate-200 rounded-xl w-72 flex-shrink-0 overflow-hidden shadow-sm';
+                col.innerHTML = `<div class="bg-slate-100 border-b border-slate-200 px-4 py-3 text-center"><h3 class="font-bold text-slate-700">${daysOfWeek[dateObj.getDay()]}</h3><p class="text-xs text-slate-500 font-medium">${formattedDate}</p></div>`;
+                const taskList = document.createElement('div');
+                taskList.className = 'p-3 flex flex-col gap-3 min-h-[150px] task-list-container';
+                taskList.dataset.date = dateStr;
+                grouped[dateStr].forEach(t => taskList.appendChild(createCalendarCard(t)));
+                col.appendChild(taskList);
+                grid.appendChild(col);
+                setupSortable(taskList);
+            });
+        }
+
+        function createListCard(task) {
+            const el = document.createElement('div');
+            el.className = `task-card bg-surface border border-slate-200 rounded-lg p-4 shadow-sm flex items-center gap-4 transition-all ${task.completed ? 'completed bg-slate-50' : ''}`;
+            el.dataset.id = task.id;
+            const tagsHtml = task.tags.map(tag => `<span class="inline-block bg-slate-100 text-slate-600 text-[10px] px-2 py-0.5 rounded font-medium">${tag}</span>`).join(' ');
+            el.innerHTML = `
+                <div class="cursor-grab text-slate-300 hover:text-slate-500 drag-handle hidden sm:block"><i data-lucide="grip-vertical" class="w-5 h-5"></i></div>
+                <button onclick="toggleTask('${task.id}')" class="flex-shrink-0 w-6 h-6 rounded border-2 flex items-center justify-center transition-colors ${task.completed ? 'bg-success border-success text-white' : 'border-slate-300 hover:border-primary text-transparent'}"><i data-lucide="check" class="w-4 h-4"></i></button>
+                <div class="flex-grow min-w-0">
+                    <div class="flex items-center gap-2 mb-1"><span class="text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">${task.startTime} - ${task.endTime}</span></div>
+                    <h4 class="task-title text-slate-800 font-medium truncate">${task.title}</h4>
+                    <div class="mt-1 flex gap-1 flex-wrap">${tagsHtml}</div>
+                </div>
+                <div class="task-actions sm:opacity-0 transition-opacity flex items-center gap-1 sm:gap-2 flex-shrink-0">
+                    <button onclick="editTask('${task.id}')" class="p-1.5 text-slate-400 hover:text-primary hover:bg-blue-50 rounded transition-colors"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
+                    <button onclick="deleteTask('${task.id}')" class="p-1.5 text-slate-400 hover:text-danger hover:bg-red-50 rounded transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                </div>`;
+            return el;
+        }
+
+        function createCalendarCard(task) {
+            const el = document.createElement('div');
+            el.className = `task-card cursor-grab bg-white border ${task.completed ? 'border-success/30 bg-success/5' : 'border-slate-200 hover:border-primary/50'} rounded-lg p-3 shadow-sm flex flex-col gap-2 transition-all relative group`;
+            el.dataset.id = task.id;
+            const tagsHtml = task.tags.map(tag => `<span class="inline-block bg-slate-100 text-slate-600 text-[10px] px-1.5 py-0.5 rounded font-medium">${tag}</span>`).join(' ');
+            el.innerHTML = `
+                <div class="flex justify-between items-start">
+                    <span class="text-[11px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> ${task.startTime} - ${task.endTime}</span>
+                    <button onclick="toggleTask('${task.id}')" class="flex-shrink-0 w-5 h-5 rounded border flex items-center justify-center transition-colors ${task.completed ? 'bg-success border-success text-white' : 'border-slate-300 hover:border-primary text-transparent'}"><i data-lucide="check" class="w-3 h-3"></i></button>
+                </div>
+                <h4 class="text-sm font-semibold text-slate-800 leading-tight pr-2 ${task.completed ? 'line-through opacity-60' : ''}">${task.title}</h4>
+                ${tagsHtml ? `<div class="flex flex-wrap gap-1 mt-1">${tagsHtml}</div>` : ''}
+                <div class="absolute inset-0 bg-slate-900/5 backdrop-blur-[1px] opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center gap-2 pointer-events-none">
+                    <button onclick="editTask('${task.id}')" class="pointer-events-auto bg-white p-2 rounded-md shadow-md text-slate-600 hover:text-primary hover:bg-slate-50"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
+                    <button onclick="deleteTask('${task.id}')" class="pointer-events-auto bg-white p-2 rounded-md shadow-md text-slate-600 hover:text-danger hover:bg-slate-50"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                </div>`;
+            return el;
+        }
+
+        function getGroupedAndSortedTasks() {
+            const grouped = {};
+            tasks.forEach(t => { if (!grouped[t.date]) grouped[t.date] = []; grouped[t.date].push(t); });
+            Object.keys(grouped).forEach(date => grouped[date].sort((a, b) => a.startTime.localeCompare(b.startTime)));
+            return grouped;
+        }
+
+        function setupSortable(element) {
+            sortableInstances.push(new Sortable(element, {
+                group: 'shared', animation: 150, handle: currentView === 'list' ? '.drag-handle' : null,
+                ghostClass: 'sortable-ghost', dragClass: 'sortable-drag', onEnd: handleTaskReorder
+            }));
+        }
+
+        function toggleTask(id) { const task = tasks.find(t => t.id === id); if (task) { task.completed = !task.completed; renderApp(); } }
+        function deleteTask(id) { if (confirm("Deseja eliminar este bloco da agenda?")) { tasks = tasks.filter(t => t.id !== id); renderApp(); showToast("Bloco eliminado."); } }
+
+        function openTaskModal(id = null) {
+            const el = id ? tasks.find(t => t.id === id) : null;
+            document.getElementById('taskModalTitle').innerText = el ? "Editar Bloco" : "Novo Bloco";
+            document.getElementById('taskId').value = el ? el.id : '';
+            document.getElementById('taskDate').value = el ? el.date : new Date().toISOString().split('T')[0];
+            document.getElementById('taskStartTime').value = el ? el.startTime : '08:00';
+            document.getElementById('taskEndTime').value = el ? el.endTime : '09:00';
+            document.getElementById('taskTitle').value = el ? el.title : '';
+            document.getElementById('taskTags').value = el ? el.tags.join(' ') : '';
+            openModal('taskModal');
+        }
+
+        function editTask(id) { openTaskModal(id); }
+
+        function saveTask() {
+            const id = document.getElementById('taskId').value, date = document.getElementById('taskDate').value;
+            const startTime = document.getElementById('taskStartTime').value, endTime = document.getElementById('taskEndTime').value;
+            const title = document.getElementById('taskTitle').value.trim(), tagsInput = document.getElementById('taskTags').value.trim();
+            if (!date || !startTime || !endTime || !title) { alert("Preencha todos os campos."); return; }
+            const tags = tagsInput ? tagsInput.split(/\s+/).map(t => t.startsWith('#') ? t : `#${t}`) : [];
+            if (id) {
+                const i = tasks.findIndex(t => t.id === id);
+                if (i > -1) { tasks[i] = { ...tasks[i], date, startTime, endTime, title, tags }; showToast("Bloco atualizado."); }
+            } else { tasks.push({ id: Date.now().toString(), date, startTime, endTime, title, tags, completed: false }); showToast("Novo bloco adicionado."); }
+            closeModal('taskModal'); renderApp();
+        }
+
+        function handleTaskReorder(evt) {
+            const newDate = evt.to.dataset.date, taskId = evt.item.dataset.id;
+            const idx = tasks.findIndex(t => t.id === taskId);
+            if (idx === -1) return;
+            if (tasks[idx].date !== newDate) tasks[idx].date = newDate;
+            const newOrderIds = Array.from(evt.to.children).map(el => el.dataset.id);
+            tasks = [...tasks.filter(t => t.date !== newDate), ...newOrderIds.map(id => tasks.find(t => t.id === id))];
+            showToast("Ordem atualizada.");
+        }
+
+        function executeImport() {
+            const lines = document.getElementById('importTextarea').value.split('\n');
+            let added = 0;
+            lines.forEach(line => {
+                const match = line.trim().match(/^(\d{4}-\d{2}-\d{2})\s+(\d{2}:\d{2})-(\d{2}:\d{2})\s+(.*)$/);
+                if (match) {
+                    const [, date, startTime, endTime, rest] = match;
+                    const tags = rest.match(/#\w+/g) || [], title = rest.replace(/#\w+/g, '').trim();
+                    if (!tasks.some(t => t.date === date && t.startTime === startTime && t.title === title)) {
+                        tasks.push({ id: Date.now().toString() + Math.random(), date, startTime, endTime, title, tags, completed: false }); added++;
+                    }
+                }
+            });
+            closeModal('importModal');
+            if (added > 0) { renderApp(); showToast(`${added} blocos importados com sucesso.`); } else showToast("Nenhuma tarefa válida.");
+        }
+
+        function prepareExport() {
+            if (tasks.length === 0) { alert("Não há tarefas para exportar."); return; }
+            const grouped = getGroupedAndSortedTasks();
+            document.getElementById('exportTextarea').value = Object.keys(grouped).sort().map(d =>
+                grouped[d].map(t => `${t.date} ${t.startTime}-${t.endTime} ${t.title} ${t.tags.join(' ')}`).join('\n')
+            ).join('\n\n');
+            openModal('exportModal');
+        }
+
+        function copyExport() {
+            document.getElementById('exportTextarea').select(); document.execCommand('copy'); showToast("Texto copiado.");
+        }
+
+        function openModal(id) { const m = document.getElementById(id); m.classList.remove('hidden'); setTimeout(() => { m.classList.remove('opacity-0'); m.querySelector('div').classList.remove('scale-95'); }, 10); }
+        function closeModal(id) { const m = document.getElementById(id); m.classList.add('opacity-0'); m.querySelector('div').classList.add('scale-95'); setTimeout(() => m.classList.add('hidden'), 200); }
+        let toastTimeout; function showToast(msg) { const t = document.getElementById('toast'); document.getElementById('toastMessage').innerText = msg; t.classList.remove('translate-y-20', 'opacity-0'); clearTimeout(toastTimeout); toastTimeout = setTimeout(() => t.classList.add('translate-y-20', 'opacity-0'), 3000); }
+
+        window.onload = initApp;
+    </script>
+</body>
+
+</html>
