@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planner de Alta Performance</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- SortableJS para Drag and Drop -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563eb',
+                        secondary: '#475569',
+                        success: '#16a34a',
+                        warning: '#ea580c',
+                        danger: '#dc2626',
+                        background: '#f8fafc',
+                        surface: '#ffffff'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        .sortable-ghost {
+            opacity: 0.4;
+            background-color: #e2e8f0;
+            border: 2px dashed #94a3b8;
+        }
+
+        .sortable-drag {
+            cursor: grabbing !important;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .task-card:hover .task-actions {
+            opacity: 1;
+        }
+
+        .task-card.completed {
+            opacity: 0.6;
+        }
+
+        .task-card.completed .task-title {
+            text-decoration: line-through;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Ocultar barra de rolagem no calendário se não houver hover, mantendo usabilidade */
+        .calendar-scroll {
+            scrollbar-width: thin;
+        }
+    </style>
+</head>
+
+<body class="text-slate-800 antialiased min-h-screen flex flex-col">
+
+    <!-- Navbar -->
+    <nav class="bg-surface border-b border-slate-200 sticky top-0 z-10 shadow-sm">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <i data-lucide="calendar-check" class="text-primary w-6 h-6"></i>
+                <h1 class="font-bold text-xl tracking-tight text-slate-900">Planeamento <span
+                        class="text-primary">Estratégico</span></h1>
+            </div>
+            <div class="flex items-center gap-2 sm:gap-4">
+                <button onclick="openModal('importModal')"
+                    class="text-sm font-medium text-slate-600 hover:text-primary transition-colors flex items-center gap-1">
+                    <i data-lucide="download" class="w-4 h-4"></i> <span class="hidden sm:inline">Importar</span>
+                </button>
+                <button onclick="prepareExport()"
+                    class="text-sm font-medium text-slate-600 hover:text-primary transition-colors flex items-center gap-1">
+                    <i data-lucide="upload" class="w-4 h-4"></i> <span class="hidden sm:inline">Exportar</span>
+                </button>
+                <div class="w-px h-6 bg-slate-200 mx-1"></div>
+                <button onclick="openTaskModal()"
+                    class="bg-primary hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
+                    <i data-lucide="plus" class="w-4 h-4"></i> Novo Bloco
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-8">
+
+        <!-- Placar de Disciplina (Análise) -->
+        <section class="bg-surface rounded-xl border border-slate-200 shadow-sm p-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                <h2 class="text-lg font-semibold flex items-center gap-2 text-slate-800">
+                    <i data-lucide="bar-chart-2" class="w-5 h-5 text-secondary"></i> Painel de Execução
+                </h2>
+                <div class="flex items-center gap-4">
+                    <button onclick="openAnalysisModal()"
+                        class="text-sm font-medium text-primary hover:text-blue-800 transition-colors flex items-center gap-1 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">
+                        <i data-lucide="pie-chart" class="w-4 h-4"></i> Análise Detalhada
+                    </button>
+                    <span id="completion-percentage" class="text-2xl font-bold text-primary">0%</span>
+                </div>
+            </div>
+
+            <div class="w-full bg-slate-100 rounded-full h-3 mb-6 overflow-hidden">
+                <div id="progress-bar" class="bg-primary h-3 rounded-full transition-all duration-500 ease-out"
+                    style="width: 0%"></div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-4 text-center">
+                <div class="bg-slate-50 rounded-lg p-3 border border-slate-100">
+                    <p class="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1">Total</p>
+                    <p id="stat-total" class="text-xl font-semibold text-slate-800">0</p>
+                </div>
+                <div class="bg-green-50 rounded-lg p-3 border border-green-100">
+                    <p class="text-xs text-green-600 font-medium uppercase tracking-wider mb-1">Concluídas</p>
+                    <p id="stat-completed" class="text-xl font-semibold text-green-700">0</p>
+                </div>
+                <div class="bg-orange-50 rounded-lg p-3 border border-orange-100">
+                    <p class="text-xs text-orange-600 font-medium uppercase tracking-wider mb-1">Pendentes</p>
+                    <p id="stat-pending" class="text-xl font-semibold text-orange-700">0</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Controlos de Visualização -->
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 -mb-2">
+            <h2 class="text-xl font-bold text-slate-800">A Minha Agenda</h2>
+            <div class="flex bg-slate-200/60 p-1 rounded-lg w-max">
+                <button id="btn-view-list" onclick="setView('list')"
+                    class="px-4 py-1.5 text-sm font-semibold rounded-md bg-white shadow-sm text-slate-800 transition-all flex items-center gap-2">
+                    <i data-lucide="list" class="w-4 h-4"></i> Lista
+                </button>
+                <button id="btn-view-cal" onclick="setView('calendar')"
+                    class="px-4 py-1.5 text-sm font-semibold rounded-md text-slate-500 hover:text-slate-800 transition-all flex items-center gap-2">
+                    <i data-lucide="layout-grid" class="w-4 h-4"></i> Calendário
+                </button>
+            </div>
+        </div>
+
+        <!-- Estado Vazio (Global) -->
+        <div class="text-center py-12 text-slate-400 hidden" id="empty-state">
+            <i data-lucide="inbox" class="w-12 h-12 mx-auto mb-3 opacity-50"></i>
+            <p>Nenhuma tarefa no sistema.</p>
+            <p class="text-sm mt-1">Clique em "Importar" para colar o seu plano ou adicione manualmente.</p>
+        </div>
+
+        <!-- Container de Tarefas (Vista em Lista) -->
+        <section id="agenda-container" class="flex flex-col gap-8 pb-12">
+            <!-- Os dias serão renderizados aqui via JS -->
+        </section>
+
+        <!-- Container de Tarefas (Vista em Calendário) -->
+        <section id="calendar-container" class="hidden pb-12 overflow-x-auto calendar-scroll">
+            <div id="calendar-grid" class="flex gap-4 min-w-max items-start">
+                <!-- As colunas dos dias serão renderizadas aqui via JS -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal de Importação -->
+    <div id="importModal"
+        class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity">
+        <div
+            class="bg-surface rounded-xl shadow-xl w-full max-w-2xl overflow-hidden transform scale-95 transition-transform duration-200">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 class="font-semibold text-lg flex items-center gap-2"><i data-lucide="download" class="w-5 h-5"></i>
+                    Importar do TickTick</h3>
+                <button onclick="closeModal('importModal')"
+                    class="text-slate-400 hover:text-slate-600 transition-colors"><i data-lucide="x"
+                        class="w-5 h-5"></i></button>
+            </div>
+            <div class="p-6">
+                <p class="text-sm text-slate-600 mb-3">Cole o seu planeamento no formato: <code
+                        class="bg-slate-100 px-1 py-0.5 rounded text-xs">YYYY-MM-DD HH:MM-HH:MM Título #Tag</code></p>
+                <textarea id="importTextarea" rows="10"
+                    class="w-full border border-slate-300 rounded-lg p-3 text-sm font-mono focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
+                    placeholder="Ex:\n2025-11-20 13:30-14:30 🎯 Concurso — Bloco 1 #Concurso #DeepWork"></textarea>
+            </div>
+            <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+                <button onclick="closeModal('importModal')"
+                    class="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-200 rounded-lg transition-colors">Cancelar</button>
+                <button onclick="executeImport()"
+                    class="px-4 py-2 text-sm font-medium bg-primary text-white hover:bg-blue-700 rounded-lg transition-colors shadow-sm">Processar
+                    Importação</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Exportação -->
+    <div id="exportModal"
+        class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity">
+        <div
+            class="bg-surface rounded-xl shadow-xl w-full max-w-2xl overflow-hidden transform scale-95 transition-transform duration-200">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 class="font-semibold text-lg flex items-center gap-2"><i data-lucide="upload" class="w-5 h-5"></i>
+                    Exportar para TickTick</h3>
+                <button onclick="closeModal('exportModal')"
+                    class="text-slate-400 hover:text-slate-600 transition-colors"><i data-lucide="x"
+                        class="w-5 h-5"></i></button>
+            </div>
+            <div class="p-6">
+                <p class="text-sm text-slate-600 mb-3">Copie o texto abaixo e cole na caixa de entrada do TickTick
+                    (Adição em Lote).</p>
+                <textarea id="exportTextarea" rows="10" readonly
+                    class="w-full border border-slate-300 rounded-lg p-3 text-sm font-mono bg-slate-50 focus:outline-none"></textarea>
+            </div>
+            <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+                <button onclick="closeModal('exportModal')"
+                    class="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-200 rounded-lg transition-colors">Fechar</button>
+                <button onclick="copyExport()"
+                    class="px-4 py-2 text-sm font-medium bg-primary text-white hover:bg-blue-700 rounded-lg transition-colors shadow-sm flex items-center gap-2">
+                    <i data-lucide="copy" class="w-4 h-4"></i> Copiar Texto
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Análise Detalhada -->
+    <div id="analysisModal"
+        class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity">
+        <div
+            class="bg-surface rounded-xl shadow-xl w-full max-w-3xl overflow-hidden transform scale-95 transition-transform duration-200 max-h-[90vh] flex flex-col">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 class="font-semibold text-lg flex items-center gap-2"><i data-lucide="pie-chart"
+                        class="w-5 h-5 text-primary"></i> Relatório de Desempenho</h3>
+                <button onclick="closeModal('analysisModal')"
+                    class="text-slate-400 hover:text-slate-600 transition-colors"><i data-lucide="x"
+                        class="w-5 h-5"></i></button>
+            </div>
+
+            <div class="p-6 overflow-y-auto flex-grow flex flex-col gap-8 bg-slate-50/50">
+
+                <!-- Visão Geral em Tempo -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+                        <p class="text-xs font-semibold text-slate-500 uppercase">Horas Planeadas</p>
+                        <p id="an-total-hours" class="text-xl font-bold text-slate-800 mt-1">0h</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+                        <p class="text-xs font-semibold text-green-600 uppercase">Executadas</p>
+                        <p id="an-completed-hours" class="text-xl font-bold text-green-700 mt-1">0h</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+                        <p class="text-xs font-semibold text-orange-600 uppercase">Défice</p>
+                        <p id="an-pending-hours" class="text-xl font-bold text-orange-700 mt-1">0h</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+                        <p class="text-xs font-semibold text-primary uppercase">Eficiência</p>
+                        <p id="an-efficiency" class="text-xl font-bold text-primary mt-1">0%</p>
+                    </div>
+                </div>
+
+                <!-- Análise por Etiquetas (Tags) -->
+                <div>
+                    <h4 class="text-sm font-bold text-slate-700 mb-4 border-b border-slate-200 pb-2">Desempenho por
+                        Categoria (Etiquetas)</h4>
+                    <div id="an-tags-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Renderizado via JS -->
+                    </div>
+                </div>
+
+                <!-- Análise por Dia -->
+                <div>
+                    <h4 class="text-sm font-bold text-slate-700 mb-4 border-b border-slate-200 pb-2">Taxa de Conclusão
+                        Diária</h4>
+                    <div id="an-days-container" class="flex flex-col gap-3">
+                        <!-- Renderizado via JS -->
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="p-4 bg-white border-t border-slate-100 flex justify-end">
+                <button onclick="closeModal('analysisModal')"
+                    class="px-5 py-2 text-sm font-medium bg-slate-800 text-white hover:bg-slate-700 rounded-lg transition-colors shadow-sm">Fechar
+                    Relatório</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Tarefa (Adicionar/Editar) -->
+    <div id="taskModal"
+        class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity">
+        <div
+            class="bg-surface rounded-xl shadow-xl w-full max-w-md overflow-hidden transform scale-95 transition-transform duration-200">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 id="taskModalTitle" class="font-semibold text-lg">Nova Tarefa</h3>
+                <button onclick="closeModal('taskModal')"
+                    class="text-slate-400 hover:text-slate-600 transition-colors"><i data-lucide="x"
+                        class="w-5 h-5"></i></button>
+            </div>
+            <div class="p-6 flex flex-col gap-4">
+                <input type="hidden" id="taskId">
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Título</label>
+                    <input type="text" id="taskTitle"
+                        class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none"
+                        placeholder="Ex: 📖 Devocional">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Data</label>
+                        <input type="date" id="taskDate"
+                            class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Tags (separadas por espaço)</label>
+                        <input type="text" id="taskTags"
+                            class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none"
+                            placeholder="#Teologia #Foco">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Início</label>
+                        <input type="time" id="taskStartTime"
+                            class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Fim</label>
+                        <input type="time" id="taskEndTime"
+                            class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none">
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+                <button onclick="closeModal('taskModal')"
+                    class="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-200 rounded-lg transition-colors">Cancelar</button>
+                <button onclick="saveTask()"
+                    class="px-4 py-2 text-sm font-medium bg-primary text-white hover:bg-blue-700 rounded-lg transition-colors shadow-sm">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast"
+        class="fixed bottom-4 right-4 bg-slate-800 text-white px-4 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-50 flex items-center gap-2">
+        <i data-lucide="info" class="w-5 h-5 text-blue-400"></i>
+        <span id="toastMessage" class="text-sm font-medium">Notificação</span>
+    </div>
+
+    <!-- Scripts da Aplicação -->
+    <script>
+        // Inicializar ícones Lucide
+        lucide.createIcons();
+
+        // Estado Global
+        let tasks = [];
+        let sortableInstances = [];
+        let currentView = 'list'; // 'list' ou 'calendar'
+
+        // Dia da semana para exibição
+        const daysOfWeek = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+
+        // Core Functions
+        function initApp() {
+            renderApp();
+        }
+
+        function setView(view) {
+            currentView = view;
+
+            // Atualizar botões UI
+            const activeClasses = 'px-4 py-1.5 text-sm font-semibold rounded-md bg-white shadow-sm text-slate-800 transition-all flex items-center gap-2';
+            const inactiveClasses = 'px-4 py-1.5 text-sm font-semibold rounded-md text-slate-500 hover:text-slate-800 transition-all flex items-center gap-2';
+
+            document.getElementById('btn-view-list').className = view === 'list' ? activeClasses : inactiveClasses;
+            document.getElementById('btn-view-cal').className = view === 'calendar' ? activeClasses : inactiveClasses;
+
+            renderApp();
+        }
+
+        function renderApp() {
+            updateAnalysis();
+
+            const emptyState = document.getElementById('empty-state');
+            const agendaContainer = document.getElementById('agenda-container');
+            const calendarContainer = document.getElementById('calendar-container');
+
+            // Limpar instâncias anteriores do Sortable
+            sortableInstances.forEach(instance => instance.destroy());
+            sortableInstances = [];
+
+            if (tasks.length === 0) {
+                emptyState.classList.remove('hidden');
+                agendaContainer.classList.add('hidden');
+                calendarContainer.classList.add('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+
+            if (currentView === 'list') {
+                agendaContainer.classList.remove('hidden');
+                calendarContainer.classList.add('hidden');
+                renderAgenda();
+            } else {
+                agendaContainer.classList.add('hidden');
+                calendarContainer.classList.remove('hidden');
+                renderCalendar();
+            }
+
+            lucide.createIcons();
+        }
+
+        // ==========================================
+        // LÓGICA DE ANÁLISE (PLACAR BÁSICO)
+        // ==========================================
+        function updateAnalysis() {
+            const total = tasks.length;
+            const completed = tasks.filter(t => t.completed).length;
+            const pending = total - completed;
+            const percentage = total === 0 ? 0 : Math.round((completed / total) * 100);
+
+            document.getElementById('stat-total').innerText = total;
+            document.getElementById('stat-completed').innerText = completed;
+            document.getElementById('stat-pending').innerText = pending;
+
+            // Animação da barra e percentagem
+            document.getElementById('completion-percentage').innerText = `${percentage}%`;
+            document.getElementById('progress-bar').style.width = `${percentage}%`;
+
+            // Alterar cor baseado na performance
+            const progressBar = document.getElementById('progress-bar');
+            const pctText = document.getElementById('completion-percentage');
+            if (percentage < 33) {
+                progressBar.className = 'h-3 rounded-full transition-all duration-500 ease-out bg-danger';
+                pctText.className = 'text-2xl font-bold text-danger';
+            } else if (percentage < 66) {
+                progressBar.className = 'h-3 rounded-full transition-all duration-500 ease-out bg-warning';
+                pctText.className = 'text-2xl font-bold text-warning';
+            } else {
+                progressBar.className = 'h-3 rounded-full transition-all duration-500 ease-out bg-success';
+                pctText.className = 'text-2xl font-bold text-success';
+            }
+        }
+
+        // ==========================================
+        // RELATÓRIO DE ANÁLISE DETALHADA
+        // ==========================================
+        function calculateDurationInMinutes(start, end) {
+            const [startH, startM] = start.split(':').map(Number);
+            const [endH, endM] = end.split(':').map(Number);
+            let diff = (endH * 60 + endM) - (startH * 60 + startM);
+            if (diff < 0) diff += 24 * 60; // Caso cruze a meia-noite
+            return diff;
+        }
+
+        function formatMinutes(mins) {
+            const h = Math.floor(mins / 60);
+            const m = mins % 60;
+            if (h > 0 && m > 0) return `${h}h ${m}m`;
+            if (h > 0) return `${h}h`;
+            return `${m}m`;
+        }
+
+        function openAnalysisModal() {
+            if (tasks.length === 0) {
+                alert("Não existem tarefas para analisar.");
+                return;
+            }
+
+            let totalMins = 0;
+            let completedMins = 0;
+            let tagStats = {};
+            let dayStats = {};
+
+            // Recolher dados
+            tasks.forEach(t => {
+                const dur = calculateDurationInMinutes(t.startTime, t.endTime);
+                totalMins += dur;
+                if (t.completed) completedMins += dur;
+
+                // Stats por Dia
+                if (!dayStats[t.date]) dayStats[t.date] = { total: 0, completed: 0 };
+                dayStats[t.date].total += dur;
+                if (t.completed) dayStats[t.date].completed += dur;
+
+                // Stats por Tag
+                // Se a tarefa não tem tag, podemos agrupá-la em "#SemEtiqueta"
+                const tagsToProcess = t.tags.length > 0 ? t.tags : ['#SemEtiqueta'];
+                tagsToProcess.forEach(tag => {
+                    if (!tagStats[tag]) tagStats[tag] = { total: 0, completed: 0 };
+                    tagStats[tag].total += dur;
+                    if (t.completed) tagStats[tag].completed += dur;
+                });
+            });
+
+            const efficiency = totalMins === 0 ? 0 : Math.round((completedMins / totalMins) * 100);
+
+            // 1. Atualizar Visão Geral
+            document.getElementById('an-total-hours').innerText = formatMinutes(totalMins);
+            document.getElementById('an-completed-hours').innerText = formatMinutes(completedMins);
+            document.getElementById('an-pending-hours').innerText = formatMinutes(totalMins - completedMins);
+            document.getElementById('an-efficiency').innerText = `${efficiency}%`;
+
+            // 2. Renderizar Tags
+            const tagsContainer = document.getElementById('an-tags-container');
+            tagsContainer.innerHTML = '';
+
+            // Ordenar tags por volume total de horas investidas (maior para menor)
+            const sortedTags = Object.keys(tagStats).sort((a, b) => tagStats[b].total - tagStats[a].total);
+
+            sortedTags.forEach(tag => {
+                const stats = tagStats[tag];
+                const pct = stats.total === 0 ? 0 : Math.round((stats.completed / stats.total) * 100);
+
+                let colorClass = 'bg-primary';
+                if (pct < 50) colorClass = 'bg-danger';
+                else if (pct < 80) colorClass = 'bg-warning';
+                else colorClass = 'bg-success';
+
+                tagsContainer.innerHTML += `
+                    <div class="bg-white p-3 rounded-lg border border-slate-100 shadow-sm">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-sm font-semibold text-slate-700">${tag}</span>
+                            <span class="text-xs font-medium text-slate-500">${formatMinutes(stats.completed)} / ${formatMinutes(stats.total)}</span>
+                        </div>
+                        <div class="w-full bg-slate-100 rounded-full h-2">
+                            <div class="${colorClass} h-2 rounded-full transition-all" style="width: ${pct}%"></div>
+                        </div>
+                        <p class="text-[10px] text-right mt-1 font-bold text-slate-400">${pct}% Executado</p>
+                    </div>
+                `;
+            });
+
+            // 3. Renderizar Dias
+            const daysContainer = document.getElementById('an-days-container');
+            daysContainer.innerHTML = '';
+            const sortedDates = Object.keys(dayStats).sort();
+
+            sortedDates.forEach(dateStr => {
+                const stats = dayStats[dateStr];
+                const pct = stats.total === 0 ? 0 : Math.round((stats.completed / stats.total) * 100);
+                const dateObj = new Date(dateStr + 'T00:00:00');
+                const dayName = daysOfWeek[dateObj.getDay()];
+                const formattedDate = `${dateStr.split('-')[2]}/${dateStr.split('-')[1]}`;
+
+                daysContainer.innerHTML += `
+                    <div class="flex items-center gap-4 bg-white p-3 rounded-lg border border-slate-100 shadow-sm">
+                        <div class="w-24 flex-shrink-0">
+                            <p class="text-xs font-bold text-slate-700">${dayName}</p>
+                            <p class="text-[10px] text-slate-400">${formattedDate}</p>
+                        </div>
+                        <div class="flex-grow">
+                            <div class="w-full bg-slate-100 rounded-full h-2">
+                                <div class="bg-slate-800 h-2 rounded-full transition-all" style="width: ${pct}%"></div>
+                            </div>
+                        </div>
+                        <div class="w-12 text-right flex-shrink-0">
+                            <span class="text-sm font-bold text-slate-700">${pct}%</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            openModal('analysisModal');
+        }
+
+        // ==========================================
+        // RENDER: VISTA EM LISTA
+        // ==========================================
+        function renderAgenda() {
+            const container = document.getElementById('agenda-container');
+            container.innerHTML = '';
+
+            const groupedTasks = getGroupedAndSortedTasks();
+            const sortedDates = Object.keys(groupedTasks).sort();
+
+            sortedDates.forEach(dateStr => {
+                const dateObj = new Date(dateStr + 'T00:00:00');
+                const dayName = daysOfWeek[dateObj.getDay()];
+                const formattedDate = `${dateStr.split('-')[2]}/${dateStr.split('-')[1]}`;
+
+                const dayBlock = document.createElement('div');
+                dayBlock.className = 'flex flex-col gap-3';
+
+                const header = document.createElement('h3');
+                header.className = 'text-sm font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 pb-2 flex items-center justify-between';
+                header.innerHTML = `<span>${dayName} <span class="font-normal text-slate-400 ml-1">(${formattedDate})</span></span>`;
+                dayBlock.appendChild(header);
+
+                const taskList = document.createElement('div');
+                taskList.className = 'flex flex-col gap-2 task-list-container min-h-[50px]';
+                taskList.dataset.date = dateStr;
+
+                groupedTasks[dateStr].forEach(task => {
+                    taskList.appendChild(createListCard(task));
+                });
+
+                dayBlock.appendChild(taskList);
+                container.appendChild(dayBlock);
+
+                setupSortable(taskList);
+            });
+        }
+
+        // ==========================================
+        // RENDER: VISTA EM CALENDÁRIO (COLUNAS)
+        // ==========================================
+        function renderCalendar() {
+            const grid = document.getElementById('calendar-grid');
+            grid.innerHTML = '';
+
+            const groupedTasks = getGroupedAndSortedTasks();
+            const sortedDates = Object.keys(groupedTasks).sort();
+
+            sortedDates.forEach(dateStr => {
+                const dateObj = new Date(dateStr + 'T00:00:00');
+                const dayName = daysOfWeek[dateObj.getDay()];
+                const formattedDate = `${dateStr.split('-')[2]}/${dateStr.split('-')[1]}`;
+
+                // Coluna do Dia
+                const col = document.createElement('div');
+                col.className = 'flex flex-col bg-slate-50/80 border border-slate-200 rounded-xl w-72 flex-shrink-0 overflow-hidden shadow-sm';
+
+                // Cabeçalho da Coluna
+                const header = document.createElement('div');
+                header.className = 'bg-slate-100 border-b border-slate-200 px-4 py-3 text-center';
+                header.innerHTML = `
+                    <h3 class="font-bold text-slate-700">${dayName}</h3>
+                    <p class="text-xs text-slate-500 font-medium">${formattedDate}</p>
+                `;
+                col.appendChild(header);
+
+                // Container de Tarefas da Coluna
+                const taskList = document.createElement('div');
+                taskList.className = 'p-3 flex flex-col gap-3 min-h-[150px] task-list-container';
+                taskList.dataset.date = dateStr;
+
+                groupedTasks[dateStr].forEach(task => {
+                    taskList.appendChild(createCalendarCard(task));
+                });
+
+                col.appendChild(taskList);
+                grid.appendChild(col);
+
+                setupSortable(taskList);
+            });
+        }
+
+        // ==========================================
+        // COMPONENTES UI (CARTOES DE TAREFA)
+        // ==========================================
+        function createListCard(task) {
+            const el = document.createElement('div');
+            el.className = `task-card bg-surface border border-slate-200 rounded-lg p-4 shadow-sm flex items-center gap-4 transition-all ${task.completed ? 'completed bg-slate-50' : ''}`;
+            el.dataset.id = task.id;
+
+            const tagsHtml = task.tags.map(tag => `<span class="inline-block bg-slate-100 text-slate-600 text-[10px] px-2 py-0.5 rounded font-medium">${tag}</span>`).join(' ');
+
+            el.innerHTML = `
+                <div class="cursor-grab text-slate-300 hover:text-slate-500 drag-handle hidden sm:block">
+                    <i data-lucide="grip-vertical" class="w-5 h-5"></i>
+                </div>
+                <button onclick="toggleTask('${task.id}')" class="flex-shrink-0 w-6 h-6 rounded border-2 flex items-center justify-center transition-colors ${task.completed ? 'bg-success border-success text-white' : 'border-slate-300 hover:border-primary text-transparent'}">
+                    <i data-lucide="check" class="w-4 h-4"></i>
+                </button>
+                <div class="flex-grow min-w-0">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">${task.startTime} - ${task.endTime}</span>
+                    </div>
+                    <h4 class="task-title text-slate-800 font-medium truncate">${task.title}</h4>
+                    <div class="mt-1 flex gap-1 flex-wrap">
+                        ${tagsHtml}
+                    </div>
+                </div>
+                <div class="task-actions sm:opacity-0 transition-opacity flex items-center gap-1 sm:gap-2 flex-shrink-0">
+                    <button onclick="editTask('${task.id}')" class="p-1.5 text-slate-400 hover:text-primary hover:bg-blue-50 rounded transition-colors"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
+                    <button onclick="deleteTask('${task.id}')" class="p-1.5 text-slate-400 hover:text-danger hover:bg-red-50 rounded transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                </div>
+            `;
+            return el;
+        }
+
+        function createCalendarCard(task) {
+            const el = document.createElement('div');
+            el.className = `task-card cursor-grab bg-white border ${task.completed ? 'border-success/30 bg-success/5' : 'border-slate-200 hover:border-primary/50'} rounded-lg p-3 shadow-sm flex flex-col gap-2 transition-all relative group`;
+            el.dataset.id = task.id;
+
+            const tagsHtml = task.tags.map(tag => `<span class="inline-block bg-slate-100 text-slate-600 text-[10px] px-1.5 py-0.5 rounded font-medium">${tag}</span>`).join(' ');
+
+            el.innerHTML = `
+                <div class="flex justify-between items-start">
+                    <span class="text-[11px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded flex items-center gap-1">
+                        <i data-lucide="clock" class="w-3 h-3"></i> ${task.startTime} - ${task.endTime}
+                    </span>
+                    <button onclick="toggleTask('${task.id}')" class="flex-shrink-0 w-5 h-5 rounded border flex items-center justify-center transition-colors ${task.completed ? 'bg-success border-success text-white' : 'border-slate-300 hover:border-primary text-transparent'}">
+                        <i data-lucide="check" class="w-3 h-3"></i>
+                    </button>
+                </div>
+                <h4 class="text-sm font-semibold text-slate-800 leading-tight pr-2 ${task.completed ? 'line-through opacity-60' : ''}">${task.title}</h4>
+                ${tagsHtml ? `<div class="flex flex-wrap gap-1 mt-1">${tagsHtml}</div>` : ''}
+                
+                <!-- Overlay de Ações (Aparece no Hover) -->
+                <div class="absolute inset-0 bg-slate-900/5 backdrop-blur-[1px] opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center gap-2 pointer-events-none">
+                    <button onclick="editTask('${task.id}')" class="pointer-events-auto bg-white p-2 rounded-md shadow-md text-slate-600 hover:text-primary hover:bg-slate-50 transition-colors"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
+                    <button onclick="deleteTask('${task.id}')" class="pointer-events-auto bg-white p-2 rounded-md shadow-md text-slate-600 hover:text-danger hover:bg-slate-50 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                </div>
+            `;
+            return el;
+        }
+
+        function getGroupedAndSortedTasks() {
+            const grouped = {};
+            tasks.forEach(t => {
+                if (!grouped[t.date]) grouped[t.date] = [];
+                grouped[t.date].push(t);
+            });
+            // Ordenar por hora de início dentro de cada dia
+            Object.keys(grouped).forEach(date => {
+                grouped[date].sort((a, b) => a.startTime.localeCompare(b.startTime));
+            });
+            return grouped;
+        }
+
+        function setupSortable(element) {
+            const sortable = new Sortable(element, {
+                group: 'shared', // Permite arrastar entre dias
+                animation: 150,
+                handle: currentView === 'list' ? '.drag-handle' : null, // No calendário, o card todo é o drag-handle
+                ghostClass: 'sortable-ghost',
+                dragClass: 'sortable-drag',
+                onEnd: function (evt) {
+                    handleTaskReorder(evt);
+                }
+            });
+            sortableInstances.push(sortable);
+        }
+
+        // ==========================================
+        // LÓGICA DE MANIPULAÇÃO DE TAREFAS (CRUD & Reorder)
+        // ==========================================
+        function toggleTask(id) {
+            const task = tasks.find(t => t.id === id);
+            if (task) {
+                task.completed = !task.completed;
+                renderApp();
+            }
+        }
+
+        function deleteTask(id) {
+            if (confirm("Deseja eliminar este bloco da sua agenda?")) {
+                tasks = tasks.filter(t => t.id !== id);
+                renderApp();
+                showToast("Bloco eliminado com sucesso.");
+            }
+        }
+
+        function openTaskModal(id = null) {
+            const modal = document.getElementById('taskModal');
+            const titleEl = document.getElementById('taskModalTitle');
+
+            // Reset form
+            document.getElementById('taskId').value = '';
+            document.getElementById('taskDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('taskStartTime').value = '08:00';
+            document.getElementById('taskEndTime').value = '09:00';
+            document.getElementById('taskTitle').value = '';
+            document.getElementById('taskTags').value = '';
+
+            if (id) {
+                titleEl.innerText = "Editar Bloco";
+                const task = tasks.find(t => t.id === id);
+                if (task) {
+                    document.getElementById('taskId').value = task.id;
+                    document.getElementById('taskDate').value = task.date;
+                    document.getElementById('taskStartTime').value = task.startTime;
+                    document.getElementById('taskEndTime').value = task.endTime;
+                    document.getElementById('taskTitle').value = task.title;
+                    document.getElementById('taskTags').value = task.tags.join(' ');
+                }
+            } else {
+                titleEl.innerText = "Novo Bloco de Foco";
+            }
+
+            openModal('taskModal');
+        }
+
+        function editTask(id) {
+            openTaskModal(id);
+        }
+
+        function saveTask() {
+            const id = document.getElementById('taskId').value;
+            const date = document.getElementById('taskDate').value;
+            const startTime = document.getElementById('taskStartTime').value;
+            const endTime = document.getElementById('taskEndTime').value;
+            const title = document.getElementById('taskTitle').value.trim();
+            const tagsInput = document.getElementById('taskTags').value.trim();
+
+            if (!date || !startTime || !endTime || !title) {
+                alert("Preencha todos os campos obrigatórios (Data, Início, Fim, Título).");
+                return;
+            }
+
+            const formattedTags = tagsInput ? tagsInput.split(/\s+/).map(t => t.startsWith('#') ? t : `#${t}`) : [];
+
+            if (id) {
+                const taskIndex = tasks.findIndex(t => t.id === id);
+                if (taskIndex > -1) {
+                    tasks[taskIndex] = { ...tasks[taskIndex], date, startTime, endTime, title, tags: formattedTags };
+                    showToast("Bloco atualizado.");
+                }
+            } else {
+                tasks.push({
+                    id: Date.now().toString(),
+                    date,
+                    startTime,
+                    endTime,
+                    title,
+                    tags: formattedTags,
+                    completed: false
+                });
+                showToast("Novo bloco adicionado.");
+            }
+
+            closeModal('taskModal');
+            renderApp();
+        }
+
+        function handleTaskReorder(evt) {
+            const itemEl = evt.item;
+            const newDate = evt.to.dataset.date;
+            const taskId = itemEl.dataset.id;
+
+            const taskIndex = tasks.findIndex(t => t.id === taskId);
+            if (taskIndex === -1) return;
+
+            const task = tasks[taskIndex];
+
+            if (task.date !== newDate) {
+                task.date = newDate;
+            }
+
+            const newOrderIds = Array.from(evt.to.children).map(el => el.dataset.id);
+            const otherTasks = tasks.filter(t => t.date !== newDate);
+            const rearrangedDayTasks = newOrderIds.map(id => tasks.find(t => t.id === id));
+
+            tasks = [...otherTasks, ...rearrangedDayTasks];
+            showToast("Ordem atualizada.");
+        }
+
+        // ==========================================
+        // LÓGICA DE IMPORTAÇÃO E EXPORTAÇÃO
+        // ==========================================
+        function executeImport() {
+            const text = document.getElementById('importTextarea').value;
+            const lines = text.split('\n');
+            let added = 0;
+
+            lines.forEach(line => {
+                line = line.trim();
+                if (!line) return;
+
+                const regex = /^(\d{4}-\d{2}-\d{2})\s+(\d{2}:\d{2})-(\d{2}:\d{2})\s+(.*)$/;
+                const match = line.match(regex);
+
+                if (match) {
+                    const date = match[1];
+                    const startTime = match[2];
+                    const endTime = match[3];
+                    const rest = match[4];
+
+                    const tagRegex = /#\w+/g;
+                    const tags = rest.match(tagRegex) || [];
+                    const title = rest.replace(tagRegex, '').trim();
+
+                    const exists = tasks.some(t => t.date === date && t.startTime === startTime && t.title === title);
+
+                    if (!exists) {
+                        tasks.push({
+                            id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
+                            date,
+                            startTime,
+                            endTime,
+                            title,
+                            tags,
+                            completed: false
+                        });
+                        added++;
+                    }
+                }
+            });
+
+            closeModal('importModal');
+
+            if (added > 0) {
+                renderApp();
+                showToast(`${added} blocos importados com sucesso.`);
+            } else {
+                showToast("Nenhuma tarefa válida encontrada no texto.");
+            }
+        }
+
+        function prepareExport() {
+            if (tasks.length === 0) {
+                alert("Não há tarefas para exportar.");
+                return;
+            }
+
+            const groupedTasks = getGroupedAndSortedTasks();
+            const sortedDates = Object.keys(groupedTasks).sort();
+            let outText = "";
+
+            sortedDates.forEach(date => {
+                groupedTasks[date].forEach(t => {
+                    const tagsStr = t.tags.join(' ');
+                    outText += `${t.date} ${t.startTime}-${t.endTime} ${t.title} ${tagsStr}\n`;
+                });
+                outText += "\n";
+            });
+
+            document.getElementById('exportTextarea').value = outText.trim();
+            openModal('exportModal');
+        }
+
+        function copyExport() {
+            const textarea = document.getElementById('exportTextarea');
+            textarea.select();
+            document.execCommand('copy');
+            showToast("Texto copiado para a área de transferência.");
+        }
+
+        // ==========================================
+        // UTILITÁRIOS (Modals e Toasts)
+        // ==========================================
+        function openModal(id) {
+            const modal = document.getElementById(id);
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.querySelector('div').classList.remove('scale-95');
+            }, 10);
+        }
+
+        function closeModal(id) {
+            const modal = document.getElementById(id);
+            modal.classList.add('opacity-0');
+            modal.querySelector('div').classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 200);
+        }
+
+        let toastTimeout;
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMessage').innerText = message;
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        // Inicializar
+        window.onload = initApp;
+
+    </script>
+</body>
+
+</html>
