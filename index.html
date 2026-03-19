@@ -86,6 +86,43 @@
         .calendar-scroll {
             scrollbar-width: thin;
         }
+
+        /* Toggle Switch para Auto-sync */
+        .toggle-switch {
+            position: relative;
+            width: 36px;
+            height: 20px;
+            background: #cbd5e1;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .toggle-switch.active {
+            background: #16a34a;
+        }
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        .toggle-switch.active::after {
+            transform: translateX(16px);
+        }
+
+        /* Sync status spinner */
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .sync-spinning {
+            animation: spin 1s linear infinite;
+        }
     </style>
 </head>
 
@@ -98,20 +135,53 @@
                 <i data-lucide="calendar-check" class="text-primary w-6 h-6"></i>
                 <h1 class="font-bold text-xl tracking-tight text-slate-900">Planeamento <span
                         class="text-primary">Estratégico</span></h1>
+                <!-- Sync Status Indicator -->
+                <span id="sync-status" class="ml-2 flex items-center gap-1 text-xs font-medium text-slate-400" title="Status da sincronização">
+                    <i id="sync-icon" data-lucide="cloud-off" class="w-4 h-4"></i>
+                    <span id="sync-text" class="hidden sm:inline">Offline</span>
+                </span>
             </div>
-            <div class="flex items-center gap-2 sm:gap-4">
-                <button onclick="openModal('importModal')"
-                    class="text-sm font-medium text-slate-600 hover:text-primary transition-colors flex items-center gap-1">
-                    <i data-lucide="download" class="w-4 h-4"></i> <span class="hidden sm:inline">Importar</span>
+            <div class="flex items-center gap-1 sm:gap-2">
+                <!-- Save Local -->
+                <button onclick="handleSaveLocal()" title="Salvar localmente"
+                    class="text-sm font-medium text-slate-600 hover:text-primary transition-colors flex items-center gap-1 px-2 py-1.5 rounded-lg hover:bg-slate-100">
+                    <i data-lucide="hard-drive" class="w-4 h-4"></i> <span class="hidden lg:inline">Local</span>
                 </button>
-                <button onclick="prepareExport()"
-                    class="text-sm font-medium text-slate-600 hover:text-primary transition-colors flex items-center gap-1">
-                    <i data-lucide="upload" class="w-4 h-4"></i> <span class="hidden sm:inline">Exportar</span>
+                <!-- Save Server -->
+                <button onclick="handleSaveServer()" title="Salvar no servidor"
+                    class="text-sm font-medium text-slate-600 hover:text-primary transition-colors flex items-center gap-1 px-2 py-1.5 rounded-lg hover:bg-slate-100">
+                    <i data-lucide="cloud-upload" class="w-4 h-4"></i> <span class="hidden lg:inline">Servidor</span>
                 </button>
-                <div class="w-px h-6 bg-slate-200 mx-1"></div>
+                <!-- Load Server -->
+                <button onclick="handleLoadServer()" title="Carregar do servidor"
+                    class="text-sm font-medium text-slate-600 hover:text-primary transition-colors flex items-center gap-1 px-2 py-1.5 rounded-lg hover:bg-slate-100">
+                    <i data-lucide="cloud-download" class="w-4 h-4"></i> <span class="hidden lg:inline">Carregar</span>
+                </button>
+                <!-- Auto-sync Toggle -->
+                <div class="flex items-center gap-1.5 px-2" title="Auto-sync com servidor">
+                    <span class="text-xs font-medium text-slate-500 hidden sm:inline">Auto</span>
+                    <div id="auto-sync-toggle" class="toggle-switch" onclick="toggleAutoSync()"></div>
+                </div>
+                <div class="w-px h-6 bg-slate-200 mx-0.5"></div>
+                <!-- Import/Export -->
+                <button onclick="openModal('importModal')" title="Importar"
+                    class="text-sm font-medium text-slate-600 hover:text-primary transition-colors flex items-center gap-1 px-2 py-1.5 rounded-lg hover:bg-slate-100">
+                    <i data-lucide="download" class="w-4 h-4"></i> <span class="hidden xl:inline">Importar</span>
+                </button>
+                <button onclick="prepareExport()" title="Exportar"
+                    class="text-sm font-medium text-slate-600 hover:text-primary transition-colors flex items-center gap-1 px-2 py-1.5 rounded-lg hover:bg-slate-100">
+                    <i data-lucide="upload" class="w-4 h-4"></i> <span class="hidden xl:inline">Exportar</span>
+                </button>
+                <div class="w-px h-6 bg-slate-200 mx-0.5"></div>
+                <!-- Settings -->
+                <button onclick="openModal('settingsModal')" title="Configurações"
+                    class="text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors p-1.5 rounded-lg hover:bg-slate-100">
+                    <i data-lucide="settings" class="w-4 h-4"></i>
+                </button>
+                <!-- New Task -->
                 <button onclick="openTaskModal()"
-                    class="bg-primary hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
-                    <i data-lucide="plus" class="w-4 h-4"></i> Novo Bloco
+                    class="bg-primary hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-1.5">
+                    <i data-lucide="plus" class="w-4 h-4"></i> <span class="hidden sm:inline">Novo Bloco</span>
                 </button>
             </div>
         </div>
@@ -370,6 +440,36 @@
         </div>
     </div>
 
+    <!-- Modal de Configurações -->
+    <div id="settingsModal"
+        class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity">
+        <div
+            class="bg-surface rounded-xl shadow-xl w-full max-w-md overflow-hidden transform scale-95 transition-transform duration-200">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 class="font-semibold text-lg flex items-center gap-2"><i data-lucide="settings" class="w-5 h-5"></i>
+                    Configurações</h3>
+                <button onclick="closeModal('settingsModal')"
+                    class="text-slate-400 hover:text-slate-600 transition-colors"><i data-lucide="x"
+                        class="w-5 h-5"></i></button>
+            </div>
+            <div class="p-6 flex flex-col gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">URL do Google Apps Script</label>
+                    <input type="url" id="settingsAppsScriptUrl"
+                        class="w-full border border-slate-300 rounded-lg p-2.5 text-sm font-mono focus:ring-2 focus:ring-primary focus:border-primary outline-none"
+                        placeholder="https://script.google.com/macros/s/.../exec">
+                    <p class="text-xs text-slate-400 mt-1">Cole aqui a URL do seu Web App (Apps Script). Sem ela, apenas o salvamento local funciona.</p>
+                </div>
+            </div>
+            <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+                <button onclick="closeModal('settingsModal')"
+                    class="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-200 rounded-lg transition-colors">Cancelar</button>
+                <button onclick="saveSettings()"
+                    class="px-4 py-2 text-sm font-medium bg-primary text-white hover:bg-blue-700 rounded-lg transition-colors shadow-sm">Guardar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Notification -->
     <div id="toast"
         class="fixed bottom-4 right-4 bg-slate-800 text-white px-4 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-50 flex items-center gap-2">
@@ -387,11 +487,248 @@
         let sortableInstances = [];
         let currentView = 'list'; // 'list' ou 'calendar'
 
+        // Persistência — Configuração
+        const STORAGE_KEY = 'titan_planner_tasks';
+        const SETTINGS_KEY = 'titan_planner_settings';
+        let APPS_SCRIPT_URL = '';
+        let autoSaveEnabled = false;
+        let autoSaveTimer = null;
+
         // Dia da semana para exibição
         const daysOfWeek = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
 
+        // ==========================================
+        // PERSISTÊNCIA — LOCAL (localStorage)
+        // ==========================================
+        function saveToLocal() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+                return true;
+            } catch (e) {
+                console.error('Erro ao salvar localmente:', e);
+                return false;
+            }
+        }
+
+        function loadFromLocal() {
+            try {
+                const data = localStorage.getItem(STORAGE_KEY);
+                if (data) {
+                    tasks = JSON.parse(data);
+                    return true;
+                }
+            } catch (e) {
+                console.error('Erro ao carregar do localStorage:', e);
+            }
+            return false;
+        }
+
+        function handleSaveLocal() {
+            if (saveToLocal()) {
+                showToast('💾 Salvo localmente com sucesso.');
+            } else {
+                showToast('❌ Erro ao salvar localmente.');
+            }
+        }
+
+        // ==========================================
+        // PERSISTÊNCIA — SERVIDOR (Google Apps Script)
+        // ==========================================
+        function updateSyncStatus(status) {
+            const icon = document.getElementById('sync-icon');
+            const text = document.getElementById('sync-text');
+            const container = document.getElementById('sync-status');
+
+            icon.classList.remove('sync-spinning');
+
+            switch (status) {
+                case 'saving':
+                    icon.setAttribute('data-lucide', 'loader');
+                    icon.classList.add('sync-spinning');
+                    text.innerText = 'Salvando...';
+                    container.className = 'ml-2 flex items-center gap-1 text-xs font-medium text-blue-500';
+                    break;
+                case 'saved':
+                    icon.setAttribute('data-lucide', 'cloud-check');
+                    text.innerText = 'Sincronizado';
+                    container.className = 'ml-2 flex items-center gap-1 text-xs font-medium text-green-600';
+                    break;
+                case 'error':
+                    icon.setAttribute('data-lucide', 'cloud-alert');
+                    text.innerText = 'Erro';
+                    container.className = 'ml-2 flex items-center gap-1 text-xs font-medium text-red-500';
+                    break;
+                case 'loading':
+                    icon.setAttribute('data-lucide', 'loader');
+                    icon.classList.add('sync-spinning');
+                    text.innerText = 'Carregando...';
+                    container.className = 'ml-2 flex items-center gap-1 text-xs font-medium text-blue-500';
+                    break;
+                default: // offline/idle
+                    icon.setAttribute('data-lucide', APPS_SCRIPT_URL ? 'cloud' : 'cloud-off');
+                    text.innerText = APPS_SCRIPT_URL ? 'Pronto' : 'Offline';
+                    container.className = 'ml-2 flex items-center gap-1 text-xs font-medium text-slate-400';
+            }
+            lucide.createIcons();
+        }
+
+        async function saveToServer() {
+            if (!APPS_SCRIPT_URL) {
+                showToast('⚠️ Configure a URL do Apps Script nas Configurações.');
+                return false;
+            }
+
+            updateSyncStatus('saving');
+            try {
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tasks: tasks })
+                });
+                // no-cors retorna opaque response, assumimos sucesso
+                updateSyncStatus('saved');
+                return true;
+            } catch (e) {
+                console.error('Erro ao salvar no servidor:', e);
+                updateSyncStatus('error');
+                return false;
+            }
+        }
+
+        async function loadFromServer() {
+            if (!APPS_SCRIPT_URL) {
+                showToast('⚠️ Configure a URL do Apps Script nas Configurações.');
+                return false;
+            }
+
+            updateSyncStatus('loading');
+            try {
+                const response = await fetch(APPS_SCRIPT_URL);
+                const data = await response.json();
+                if (data.success && data.tasks) {
+                    tasks = data.tasks;
+                    saveToLocal(); // sincronizar local também
+                    renderApp();
+                    updateSyncStatus('saved');
+                    return true;
+                } else {
+                    throw new Error(data.error || 'Resposta inválida do servidor');
+                }
+            } catch (e) {
+                console.error('Erro ao carregar do servidor:', e);
+                updateSyncStatus('error');
+                return false;
+            }
+        }
+
+        async function handleSaveServer() {
+            const success = await saveToServer();
+            if (success) {
+                showToast('☁️ Salvo no servidor com sucesso.');
+            } else if (APPS_SCRIPT_URL) {
+                showToast('❌ Erro ao salvar no servidor.');
+            }
+        }
+
+        async function handleLoadServer() {
+            const success = await loadFromServer();
+            if (success) {
+                showToast('☁️ Dados carregados do servidor.');
+            } else if (APPS_SCRIPT_URL) {
+                showToast('❌ Erro ao carregar do servidor.');
+            }
+        }
+
+        // ==========================================
+        // AUTO-SYNC
+        // ==========================================
+        function toggleAutoSync() {
+            autoSaveEnabled = !autoSaveEnabled;
+            const toggle = document.getElementById('auto-sync-toggle');
+            toggle.classList.toggle('active', autoSaveEnabled);
+
+            // Salvar preferência
+            const settings = loadSettings();
+            settings.autoSave = autoSaveEnabled;
+            localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+
+            if (autoSaveEnabled) {
+                showToast('🔄 Auto-sync ativado.');
+                scheduleAutoSave(); // salvar imediatamente
+            } else {
+                showToast('⏸️ Auto-sync desativado.');
+                if (autoSaveTimer) {
+                    clearTimeout(autoSaveTimer);
+                    autoSaveTimer = null;
+                }
+            }
+        }
+
+        function scheduleAutoSave() {
+            if (!autoSaveEnabled) return;
+            if (autoSaveTimer) clearTimeout(autoSaveTimer);
+            autoSaveTimer = setTimeout(async () => {
+                await saveToServer();
+                autoSaveTimer = null;
+            }, 2000); // debounce 2 segundos
+        }
+
+        // ==========================================
+        // HOOK: Chamar após cada mutação
+        // ==========================================
+        function onDataMutated() {
+            saveToLocal(); // sempre salva local
+            if (autoSaveEnabled) {
+                scheduleAutoSave();
+            }
+        }
+
+        // ==========================================
+        // CONFIGURAÇÕES
+        // ==========================================
+        function loadSettings() {
+            try {
+                const raw = localStorage.getItem(SETTINGS_KEY);
+                return raw ? JSON.parse(raw) : {};
+            } catch (e) {
+                return {};
+            }
+        }
+
+        function saveSettings() {
+            const url = document.getElementById('settingsAppsScriptUrl').value.trim();
+            APPS_SCRIPT_URL = url;
+
+            const settings = loadSettings();
+            settings.appsScriptUrl = url;
+            localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+
+            updateSyncStatus('idle');
+            closeModal('settingsModal');
+            showToast('✅ Configurações guardadas.');
+        }
+
+        function applySettings() {
+            const settings = loadSettings();
+            APPS_SCRIPT_URL = settings.appsScriptUrl || '';
+            autoSaveEnabled = settings.autoSave || false;
+
+            // UI toggle
+            const toggle = document.getElementById('auto-sync-toggle');
+            if (toggle) toggle.classList.toggle('active', autoSaveEnabled);
+
+            // Settings modal
+            const urlInput = document.getElementById('settingsAppsScriptUrl');
+            if (urlInput) urlInput.value = APPS_SCRIPT_URL;
+
+            updateSyncStatus('idle');
+        }
+
         // Core Functions
         function initApp() {
+            applySettings();
+            loadFromLocal();
             renderApp();
         }
 
@@ -773,6 +1110,7 @@
             const task = tasks.find(t => t.id === id);
             if (task) {
                 task.completed = !task.completed;
+                onDataMutated();
                 renderApp();
             }
         }
@@ -780,6 +1118,7 @@
         function deleteTask(id) {
             if (confirm("Deseja eliminar este bloco da sua agenda?")) {
                 tasks = tasks.filter(t => t.id !== id);
+                onDataMutated();
                 renderApp();
                 showToast("Bloco eliminado com sucesso.");
             }
@@ -854,6 +1193,7 @@
             }
 
             closeModal('taskModal');
+            onDataMutated();
             renderApp();
         }
 
@@ -876,6 +1216,7 @@
             const rearrangedDayTasks = newOrderIds.map(id => tasks.find(t => t.id === id));
 
             tasks = [...otherTasks, ...rearrangedDayTasks];
+            onDataMutated();
             showToast("Ordem atualizada.");
         }
 
@@ -924,6 +1265,7 @@
             closeModal('importModal');
 
             if (added > 0) {
+                onDataMutated();
                 renderApp();
                 showToast(`${added} blocos importados com sucesso.`);
             } else {
