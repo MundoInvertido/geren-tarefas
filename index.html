@@ -3,7 +3,10 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="mobile-web-app-capable" content="yes">
     <title>Planner de Alta Performance</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -253,6 +256,15 @@
         }
         .bottom-nav-fab:active { transform: translateX(-50%) scale(0.93); }
         .bottom-nav-fab:hover { transform: translateX(-50%) scale(1.05); }
+        @media (max-width: 640px) {
+            .bottom-nav-fab {
+                bottom: 12px;
+                box-shadow: 0 6px 24px rgba(79,70,229,0.55);
+            }
+            .bottom-nav-btn {
+                padding: 6px 2px;
+            }
+        }
         .bottom-nav-spacer { flex:1; }
         
         /* Bottom nav active indicator */
@@ -277,6 +289,273 @@
             .print-area, .print-area * { visibility: visible; }
             .print-area { position: absolute; left: 0; top: 0; width: 100%; }
             .bottom-nav { display: none !important; }
+        }
+
+        /* ── Mobile Optimizations ── */
+        @media (max-width: 640px) {
+            .task-card {
+                padding: 0.875rem;
+                margin: 0 -0.25rem;
+                border-radius: 0.75rem;
+            }
+            
+            .task-card .task-actions {
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+            
+            .task-card .task-actions button {
+                padding: 0.5rem;
+            }
+            
+            .hero-gradient {
+                border-radius: 1rem;
+                margin: 0 -0.5rem;
+                padding: 1.25rem;
+            }
+            
+            .modal-content-mobile {
+                max-height: 90vh;
+                border-radius: 1rem;
+            }
+            
+            .analysis-modal-content {
+                max-height: 95vh;
+            }
+            
+            .analysis-tabs {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+            }
+            .analysis-tabs::-webkit-scrollbar { display: none; }
+            
+            .bottom-nav-fab {
+                width: 56px;
+                height: 56px;
+            }
+            
+            .toast-mobile-adjust {
+                left: 1rem;
+                right: 1rem;
+                bottom: 5rem;
+            }
+            
+            .day-header-custom {
+                padding: 0.5rem 0.75rem;
+            }
+            
+            .stat-card {
+                padding: 0.75rem;
+            }
+            
+            .grid-cols-3 {
+                gap: 0.5rem;
+            }
+            
+            .text-4xl {
+                font-size: 2.25rem;
+            }
+            
+            .text-2xl {
+                font-size: 1.5rem;
+            }
+            
+            input[type="text"],
+            input[type="date"],
+            input[type="time"],
+            input[type="url"],
+            input[type="password"],
+            textarea,
+            select {
+                font-size: 16px !important;
+                min-height: 44px;
+            }
+            
+            .btn-touch-target {
+                min-height: 44px;
+                min-width: 44px;
+            }
+            
+            .calendar-scroll {
+                margin: 0 -1rem;
+                padding: 0 1rem;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .calendar-col-width {
+                min-width: 280px;
+            }
+            
+            .fab-shadow {
+                box-shadow: 0 6px 20px rgba(79,70,229,0.5);
+            }
+            
+            .modal-backdrop {
+                padding: 0.5rem;
+            }
+            
+            .modal-inner {
+                border-radius: 1.25rem;
+                max-height: calc(100vh - 2rem);
+            }
+            
+            .nav-brand-mobile {
+                font-size: 0.9rem;
+            }
+            
+            .progress-bar-container {
+                height: 0.5rem;
+            }
+            
+            .progress-bar-fill {
+                height: 0.5rem;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .text-4xl {
+                font-size: 2rem;
+            }
+            
+            .hero-gradient {
+                padding: 1rem;
+            }
+            
+            .bottom-nav-btn span {
+                font-size: 10px;
+            }
+        }
+
+        @media (hover: none) and (pointer: coarse) {
+            .task-card:hover {
+                transform: none;
+                box-shadow: none;
+                border-color: inherit;
+            }
+            
+            .task-card:active {
+                transform: scale(0.98);
+                background: var(--surface);
+            }
+        }
+
+        @media (min-width: 768px) {
+            .md\:hide-on-desktop { display: none; }
+        }
+
+        @media (max-width: 767px) {
+            .hide-on-mobile { display: none !important; }
+            .md\:hide-on-desktop { display: flex; }
+        }
+
+        /* ── Sidebar ── */
+        .sidebar-open {
+            transform: translateX(0) !important;
+        }
+        @media (min-width: 1024px) {
+            #sidebar {
+                transform: translateX(-100%);
+            }
+            #sidebar.sidebar-open {
+                transform: translateX(0) !important;
+            }
+        }
+
+        /* ── Sidebar List Item ── */
+        .sidebar-list-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 0.25rem;
+        }
+        .sidebar-list-item:hover {
+            background: rgba(79,70,229,0.08);
+        }
+        .sidebar-list-item.active {
+            background: rgba(79,70,229,0.12);
+        }
+        .sidebar-list-color {
+            width: 10px;
+            height: 40px;
+            border-radius: 6px;
+            flex-shrink: 0;
+        }
+        .sidebar-list-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .sidebar-list-name {
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: #1e293b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .sidebar-list-count {
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+        .sidebar-list-actions {
+            display: flex;
+            gap: 0.25rem;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .sidebar-list-item:hover .sidebar-list-actions {
+            opacity: 1;
+        }
+        @media (max-width: 640px) {
+            .sidebar-list-actions {
+                opacity: 1;
+            }
+        }
+
+        /* ── Selection Mode ── */
+        .select-mode-active {
+            background: rgba(79,70,229,0.05) !important;
+        }
+        .task-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #cbd5e1;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        .task-checkbox:hover {
+            border-color: #6366f1;
+        }
+        .task-checkbox.checked {
+            background: #4f46e5;
+            border-color: #4f46e5;
+        }
+        .task-checkbox.checked svg {
+            color: white;
+        }
+
+        /* ── Bulk Actions Bar ── */
+        #bulkActionsBar {
+            animation: slideDown 0.2s ease;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── List Color Selection ── */
+        .list-color-btn.selected {
+            ring-color: currentColor;
         }
 
         /* ── Chat bubbles ── */
@@ -362,37 +641,58 @@
             backdrop-filter: blur(8px);
             border: 1px solid rgba(255,255,255,0.2);
         }
-
-
-        .chat-bubble-ai {
-            background: #f1f5f9;
-            color: #1e293b;
-            border-radius: 18px 18px 18px 4px;
-            padding: 10px 16px;
-            max-width: 85%;
-            align-self: flex-start;
-            font-size: 0.875rem;
-            line-height: 1.5;
-        }
     </style>
 </head>
 
 
 <body class="text-slate-800 antialiased min-h-screen flex flex-col">
 
-    <!-- Navbar (Desktop) -->
-    <nav class="bg-white/95 backdrop-blur-lg border-b border-slate-200/80 sticky top-0 z-30 shadow-sm">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <!-- Brand -->
+    <!-- Overlay for Sidebar -->
+    <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 z-40 hidden transition-opacity" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="fixed top-0 left-0 h-full w-80 max-w-[85vw] bg-white dark:bg-slate-800 shadow-2xl z-50 transform -translate-x-full transition-transform duration-300 flex flex-col">
+        <div class="p-5 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between bg-gradient-to-r from-slate-50 to-white dark:from-slate-800 dark:to-slate-800">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 hero-gradient rounded-xl flex items-center justify-center shadow-lg shadow-primary/25">
-                    <i data-lucide="calendar-check" class="text-white w-5 h-5"></i>
+                <div class="w-10 h-10 hero-gradient rounded-xl flex items-center justify-center shadow-md">
+                    <i data-lucide="layers" class="text-white w-5 h-5"></i>
                 </div>
                 <div>
-                    <h1 class="font-bold text-lg tracking-tight text-slate-900 hidden sm:block">
+                    <h2 class="font-bold text-lg text-slate-800 dark:text-white">Minhas Listas</h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Organize suas tarefas</p>
+                </div>
+            </div>
+            <button onclick="toggleSidebar()" class="btn-touch-target text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg p-2 transition-colors">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+
+        <!-- List Actions -->
+        <div class="p-4 border-b border-slate-100 dark:border-slate-700">
+            <button onclick="openListModal()" class="w-full hero-gradient text-white px-4 py-3 rounded-xl text-sm font-semibold transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2">
+                <i data-lucide="folder-plus" class="w-4 h-4"></i> Nova Lista
+            </button>
+        </div>
+
+        <!-- Lists Container -->
+        <div id="listsContainer" class="flex-1 overflow-y-auto p-3">
+            <!-- Lists will be rendered here -->
+        </div>
+    </aside>
+
+    <!-- Navbar (Desktop) -->
+    <nav class="bg-white/95 backdrop-blur-lg border-b border-slate-200/80 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-6xl mx-auto px-3 sm:px-4 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between">
+            <!-- Brand -->
+            <div class="flex items-center gap-2 sm:gap-3">
+                <div class="w-9 h-9 sm:w-10 sm:h-10 hero-gradient rounded-xl flex items-center justify-center shadow-lg shadow-primary/25">
+                    <i data-lucide="calendar-check" class="text-white w-4 h-4 sm:w-5 sm:h-5"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-sm sm:text-base lg:text-lg tracking-tight text-slate-900 hidden sm:block nav-brand-mobile">
                         Planeamento <span class="text-primary">Estratégico</span>
                     </h1>
-                    <h1 class="font-bold text-base tracking-tight text-slate-900 sm:hidden">Agenda</h1>
+                    <h1 class="font-bold text-sm tracking-tight text-slate-900 sm:hidden">Agenda</h1>
                     <!-- Sync Status -->
                     <span id="sync-status" class="hidden sm:flex items-center gap-1 text-xs font-medium text-slate-400" title="Status da sincronização">
                         <i id="sync-icon" data-lucide="cloud-off" class="w-3.5 h-3.5"></i>
@@ -434,7 +734,7 @@
                     <i data-lucide="moon" class="w-5 h-5" id="dark-mode-icon"></i>
                 </button>
                 <button onclick="openTaskModal()"
-                    class="hero-gradient text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 flex items-center gap-2 ml-2">
+                    class="hero-gradient text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl text-sm font-semibold transition-all shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 flex items-center gap-2 ml-2">
                     <i data-lucide="plus" class="w-4 h-4"></i> Novo Bloco
                 </button>
             </div>
@@ -445,15 +745,15 @@
                     <i id="sync-icon-mobile" data-lucide="cloud-off" class="w-4 h-4"></i>
                 </span>
                 <button onclick="openModal('importModal')" title="Importar"
-                    class="text-slate-500 hover:text-slate-700 transition-colors p-2 rounded-lg hover:bg-slate-100">
+                    class="btn-touch-target text-slate-500 hover:text-slate-700 transition-colors p-2 rounded-lg hover:bg-slate-100">
                     <i data-lucide="download" class="w-4 h-4"></i>
                 </button>
                 <button onclick="toggleDarkMode()" id="dark-mode-btn-mobile" title="Dark Mode"
-                    class="text-slate-500 hover:text-slate-700 transition-colors p-2 rounded-lg hover:bg-slate-100">
+                    class="btn-touch-target text-slate-500 hover:text-slate-700 transition-colors p-2 rounded-lg hover:bg-slate-100">
                     <i data-lucide="moon" class="w-4 h-4" id="dark-mode-icon-mobile"></i>
                 </button>
                 <button onclick="openModal('settingsModal')" title="Configurações"
-                    class="text-slate-500 hover:text-slate-700 transition-colors p-2 rounded-lg hover:bg-slate-100">
+                    class="btn-touch-target text-slate-500 hover:text-slate-700 transition-colors p-2 rounded-lg hover:bg-slate-100">
                     <i data-lucide="settings" class="w-4 h-4"></i>
                 </button>
             </div>
@@ -464,81 +764,114 @@
     <main class="flex-grow max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-5 sm:py-8 flex flex-col gap-6">
 
         <!-- Painel de Progresso (Hero Card) -->
-        <section class="hero-gradient rounded-2xl p-5 sm:p-6 shadow-xl text-white overflow-hidden relative">
+        <section class="hero-gradient rounded-2xl p-4 sm:p-5 sm:p-6 shadow-xl text-white overflow-hidden relative">
             <!-- Decorative circles -->
             <div class="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
             <div class="absolute -bottom-14 -left-8 w-56 h-56 bg-white/5 rounded-full blur-3xl"></div>
             <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl"></div>
             
             <div class="relative z-10">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
-                    <div class="flex items-center gap-4">
-                        <div class="w-14 h-14 bg-white/15 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20 shadow-lg">
-                            <i data-lucide="target" class="w-7 h-7"></i>
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-5">
+                    <div class="flex items-center gap-3 sm:gap-4">
+                        <div class="w-12 h-12 sm:w-14 sm:h-14 bg-white/15 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20 shadow-lg">
+                            <i data-lucide="target" class="w-6 h-6 sm:w-7 sm:h-7"></i>
                         </div>
                         <div>
-                            <h2 class="text-sm font-medium text-white/80">Painel de Execução</h2>
+                            <h2 class="text-xs sm:text-sm font-medium text-white/80">Painel de Execução</h2>
                             <div class="flex items-baseline gap-2">
-                                <p id="completion-percentage" class="text-4xl font-bold tracking-tight">0%</p>
+                                <p id="completion-percentage" class="text-3xl sm:text-4xl font-bold tracking-tight">0%</p>
                                 <span class="text-xs text-white/60">concluído</span>
                             </div>
                         </div>
                     </div>
                     <button onclick="openAnalysisModal()"
-                        class="self-start sm:self-auto bg-white/15 hover:bg-white/25 backdrop-blur text-white border border-white/30 px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 shadow-lg hover:shadow-xl">
-                        <i data-lucide="pie-chart" class="w-4 h-4"></i> Análise Detalhada
+                        class="btn-touch-target self-start sm:self-auto bg-white/15 hover:bg-white/25 backdrop-blur text-white border border-white/30 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 shadow-lg hover:shadow-xl">
+                        <i data-lucide="pie-chart" class="w-4 h-4"></i> <span class="hidden sm:inline">Análise Detalhada</span><span class="sm:hidden">Análise</span>
                     </button>
                 </div>
 
                 <!-- Progress Bar -->
-                <div class="progress-bar-container w-full rounded-full h-3 mb-5 overflow-hidden">
-                    <div id="progress-bar" class="progress-bar-fill h-3 rounded-full transition-all duration-700 ease-out" style="width: 0%"></div>
+                <div class="progress-bar-container w-full rounded-full h-2 sm:h-3 mb-4 sm:mb-5 overflow-hidden">
+                    <div id="progress-bar" class="progress-bar-fill h-2 sm:h-3 rounded-full transition-all duration-700 ease-out" style="width: 0%"></div>
                 </div>
 
                 <!-- Stats -->
-                <div class="grid grid-cols-3 gap-3">
-                    <div class="stat-card rounded-xl p-3.5 text-center">
-                        <div class="w-8 h-8 mx-auto mb-2 bg-white/20 rounded-lg flex items-center justify-center">
+                <div class="grid grid-cols-3 gap-2 sm:gap-3">
+                    <div class="stat-card rounded-xl p-3 sm:p-3.5 text-center">
+                        <div class="w-7 h-7 sm:w-8 mx-auto mb-1.5 sm:mb-2 bg-white/20 rounded-lg flex items-center justify-center">
                             <i data-lucide="list-checks" class="w-4 h-4"></i>
                         </div>
-                        <p class="text-xs font-medium text-white/70 mb-0.5">Total</p>
-                        <p id="stat-total" class="text-2xl font-bold">0</p>
+                        <p class="text-[10px] sm:text-xs font-medium text-white/70 mb-0.5">Total</p>
+                        <p id="stat-total" class="text-xl sm:text-2xl font-bold">0</p>
                     </div>
-                    <div class="stat-card rounded-xl p-3.5 text-center">
-                        <div class="w-8 h-8 mx-auto mb-2 bg-green-400/30 rounded-lg flex items-center justify-center">
+                    <div class="stat-card rounded-xl p-3 sm:p-3.5 text-center">
+                        <div class="w-7 h-7 sm:w-8 mx-auto mb-1.5 sm:mb-2 bg-green-400/30 rounded-lg flex items-center justify-center">
                             <i data-lucide="check-circle" class="w-4 h-4"></i>
                         </div>
-                        <p class="text-xs font-medium text-white/70 mb-0.5">Feitas</p>
-                        <p id="stat-completed" class="text-2xl font-bold">0</p>
+                        <p class="text-[10px] sm:text-xs font-medium text-white/70 mb-0.5">Feitas</p>
+                        <p id="stat-completed" class="text-xl sm:text-2xl font-bold">0</p>
                     </div>
-                    <div class="stat-card rounded-xl p-3.5 text-center">
-                        <div class="w-8 h-8 mx-auto mb-2 bg-amber-400/30 rounded-lg flex items-center justify-center">
+                    <div class="stat-card rounded-xl p-3 sm:p-3.5 text-center">
+                        <div class="w-7 h-7 sm:w-8 mx-auto mb-1.5 sm:mb-2 bg-amber-400/30 rounded-lg flex items-center justify-center">
                             <i data-lucide="clock" class="w-4 h-4"></i>
                         </div>
-                        <p class="text-xs font-medium text-white/70 mb-0.5">Restantes</p>
-                        <p id="stat-pending" class="text-2xl font-bold">0</p>
+                        <p class="text-[10px] sm:text-xs font-medium text-white/70 mb-0.5">Restantes</p>
+                        <p id="stat-pending" class="text-xl sm:text-2xl font-bold">0</p>
                     </div>
                 </div>
             </div>
         </section>
 
         <!-- Controlos de Visualização -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+            <div class="flex items-center gap-2 sm:gap-3">
+                <button onclick="toggleSidebar()" class="btn-touch-target w-9 h-9 sm:w-10 sm:h-10 bg-primary/10 hover:bg-primary/20 rounded-xl flex items-center justify-center transition-colors">
+                    <i data-lucide="menu" class="w-5 h-5 text-primary"></i>
+                </button>
+                <div class="w-9 h-9 sm:w-10 sm:h-10 bg-primary/10 rounded-xl flex items-center justify-center">
                     <i data-lucide="calendar-days" class="w-5 h-5 text-primary"></i>
                 </div>
-                <h2 class="text-xl font-bold text-slate-800">A Minha Agenda</h2>
+                <h2 class="text-lg sm:text-xl font-bold text-slate-800">A Minha Agenda</h2>
             </div>
-            <div class="flex bg-white border border-slate-200 p-1 rounded-xl w-max shadow-sm">
-                <button id="btn-view-list" onclick="setView('list')"
-                    class="px-4 py-2 text-sm font-semibold rounded-lg bg-primary text-white shadow-sm transition-all flex items-center gap-2">
-                    <i data-lucide="list" class="w-4 h-4"></i> Lista
+            <div class="flex items-center gap-2">
+                <button onclick="toggleSelectMode()" id="btn-select-mode" class="btn-touch-target px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg text-slate-500 hover:text-primary hover:bg-primary/5 transition-all flex items-center gap-1.5 sm:gap-2 border border-slate-200">
+                    <i data-lucide="check-square" class="w-4 h-4"></i> <span class="hidden sm:inline">Selecionar</span>
                 </button>
-                <button id="btn-view-cal" onclick="setView('calendar')"
-                    class="px-4 py-2 text-sm font-semibold rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition-all flex items-center gap-2">
-                    <i data-lucide="layout-grid" class="w-4 h-4"></i> Calendário
-                </button>
+                <div class="flex bg-white border border-slate-200 p-1 rounded-xl shadow-sm">
+                    <button id="btn-view-list" onclick="setView('list')"
+                        class="btn-touch-target px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg bg-primary text-white shadow-sm transition-all flex items-center gap-1.5 sm:gap-2">
+                        <i data-lucide="list" class="w-4 h-4"></i> Lista
+                    </button>
+                    <button id="btn-view-cal" onclick="setView('calendar')"
+                        class="btn-touch-target px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition-all flex items-center gap-1.5 sm:gap-2">
+                        <i data-lucide="layout-grid" class="w-4 h-4"></i> Calendário
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bulk Actions Bar (hidden by default) -->
+        <div id="bulkActionsBar" class="hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 shadow-lg">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="flex items-center gap-2">
+                    <span id="selectedCount" class="text-sm font-semibold text-slate-700 dark:text-slate-200">0 selecionados</span>
+                    <button onclick="selectAllTasks()" class="text-xs text-primary hover:underline">Selecionar todas</button>
+                    <button onclick="deselectAllTasks()" class="text-xs text-slate-500 hover:underline">Desmarcar</button>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="openBulkEditModal()" class="btn-touch-target px-4 py-2 text-sm font-medium text-slate-600 hover:text-primary hover:bg-primary/5 rounded-lg transition-all flex items-center gap-2 border border-slate-200">
+                        <i data-lucide="edit-3" class="w-4 h-4"></i> Editar
+                    </button>
+                    <button onclick="openBulkTagModal()" class="btn-touch-target px-4 py-2 text-sm font-medium text-slate-600 hover:text-primary hover:bg-primary/5 rounded-lg transition-all flex items-center gap-2 border border-slate-200">
+                        <i data-lucide="tag" class="w-4 h-4"></i> Tags
+                    </button>
+                    <button onclick="bulkCompleteTasks()" class="btn-touch-target px-4 py-2 text-sm font-medium text-slate-600 hover:text-primary hover:bg-primary/5 rounded-lg transition-all flex items-center gap-2 border border-slate-200">
+                        <i data-lucide="check-circle" class="w-4 h-4"></i> Concluir
+                    </button>
+                    <button onclick="bulkDeleteTasks()" class="btn-touch-target px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all flex items-center gap-2 border border-red-200">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i> Eliminar
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -597,30 +930,228 @@
 
 
 
+    <!-- Modal de Lista (Criar/Editar) -->
+    <div id="listModal"
+        class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity modal-backdrop">
+        <div class="bg-surface rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform scale-95 transition-transform duration-200 modal-inner">
+            <div class="p-5 sm:p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 id="listModalTitle" class="font-semibold text-base sm:text-lg flex items-center gap-2">
+                    <i data-lucide="folder-plus" class="w-5 h-5 text-primary"></i> Nova Lista
+                </h3>
+                <button onclick="closeModal('listModal')"
+                    class="btn-touch-target text-slate-400 hover:text-slate-600 transition-colors p-2 rounded-lg"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div class="p-5 sm:p-6 flex flex-col gap-4">
+                <input type="hidden" id="listId">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                        <i data-lucide="folder" class="w-4 h-4 inline mr-1"></i>Nome da Lista
+                    </label>
+                    <input type="text" id="listName"
+                        class="w-full border border-slate-200 rounded-xl p-3 text-base sm:text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
+                        placeholder="Ex: Tarefas de Hoje">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                        <i data-lucide="palette" class="w-4 h-4 inline mr-1"></i>Cor
+                    </label>
+                    <div class="flex gap-2 flex-wrap">
+                        <button type="button" onclick="selectListColor('indigo')" class="list-color-btn w-8 h-8 rounded-full bg-indigo-500 ring-2 ring-offset-2 ring-transparent hover:ring-indigo-400 transition-all" data-color="indigo"></button>
+                        <button type="button" onclick="selectListColor('emerald')" class="list-color-btn w-8 h-8 rounded-full bg-emerald-500 ring-2 ring-offset-2 ring-transparent hover:ring-emerald-400 transition-all" data-color="emerald"></button>
+                        <button type="button" onclick="selectListColor('orange')" class="list-color-btn w-8 h-8 rounded-full bg-orange-500 ring-2 ring-offset-2 ring-transparent hover:ring-orange-400 transition-all" data-color="orange"></button>
+                        <button type="button" onclick="selectListColor('violet')" class="list-color-btn w-8 h-8 rounded-full bg-violet-500 ring-2 ring-offset-2 ring-transparent hover:ring-violet-400 transition-all" data-color="violet"></button>
+                        <button type="button" onclick="selectListColor('cyan')" class="list-color-btn w-8 h-8 rounded-full bg-cyan-500 ring-2 ring-offset-2 ring-transparent hover:ring-cyan-400 transition-all" data-color="cyan"></button>
+                        <button type="button" onclick="selectListColor('pink')" class="list-color-btn w-8 h-8 rounded-full bg-pink-500 ring-2 ring-offset-2 ring-transparent hover:ring-pink-400 transition-all" data-color="pink"></button>
+                        <button type="button" onclick="selectListColor('amber')" class="list-color-btn w-8 h-8 rounded-full bg-amber-500 ring-2 ring-offset-2 ring-transparent hover:ring-amber-400 transition-all" data-color="amber"></button>
+                        <button type="button" onclick="selectListColor('slate')" class="list-color-btn w-8 h-8 rounded-full bg-slate-500 ring-2 ring-offset-2 ring-transparent hover:ring-slate-400 transition-all" data-color="slate"></button>
+                    </div>
+                    <input type="hidden" id="listColor" value="indigo">
+                </div>
+            </div>
+            <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+                <button onclick="closeModal('listModal')"
+                    class="btn-touch-target px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-200 rounded-xl transition-colors">Cancelar</button>
+                <button onclick="saveList()"
+                    class="btn-touch-target hero-gradient px-4 sm:px-5 py-2.5 text-sm font-semibold text-white hover:shadow-lg rounded-xl transition-all shadow-md flex items-center gap-2">
+                    <i data-lucide="save" class="w-4 h-4"></i> Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Multi-Tarefas (Adicionar várias tarefas de uma lista) -->
+    <div id="multiTaskModal"
+        class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity modal-backdrop">
+        <div class="bg-surface rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden transform scale-95 transition-transform duration-200 modal-inner max-h-[90vh] flex flex-col">
+            <div class="p-5 sm:p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50 flex-shrink-0">
+                <div class="flex items-center gap-3">
+                    <div id="multiTaskListColor" class="w-10 h-10 bg-indigo-500 rounded-xl flex items-center justify-center">
+                        <i data-lucide="list-checks" class="text-white w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-base sm:text-lg flex items-center gap-2">
+                            <i data-lucide="layers" class="w-4 h-4 text-slate-400"></i> Adicionar Tarefas
+                        </h3>
+                        <p id="multiTaskListName" class="text-xs text-slate-500">À lista selecionada</p>
+                    </div>
+                </div>
+                <button onclick="closeModal('multiTaskModal')"
+                    class="btn-touch-target text-slate-400 hover:text-slate-600 transition-colors p-2 rounded-lg"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div class="p-5 sm:p-6 flex-1 overflow-y-auto flex flex-col gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">
+                            <i data-lucide="calendar" class="w-4 h-4 inline mr-1"></i>Data
+                        </label>
+                        <input type="date" id="multiTaskDate"
+                            class="w-full border border-slate-200 rounded-xl p-3 text-base sm:text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">
+                            <i data-lucide="tag" class="w-4 h-4 inline mr-1"></i>Tags (separadas por espaço)
+                        </label>
+                        <input type="text" id="multiTaskTags"
+                            class="w-full border border-slate-200 rounded-xl p-3 text-base sm:text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
+                            placeholder="#Foco #Trabalho">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                        <i data-lucide="list" class="w-4 h-4 inline mr-1"></i>Tarefas (uma por linha no formato: HH:MM-HH:MM Título)
+                    </label>
+                    <textarea id="multiTaskTextarea" rows="10"
+                        class="w-full border border-slate-200 rounded-xl p-3 sm:p-4 text-sm font-mono focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
+                        placeholder="08:00-09:00 Devocional matinal
+09:30-10:30 Estudo bíblico
+14:00-15:00 Reunião de equipa
+16:00-17:00 Projeto pessoal"></textarea>
+                    <p class="text-xs text-slate-400 mt-2">
+                        <i data-lucide="info" class="w-3 h-3 inline"></i> Formato: HH:MM-HH:MM Título da tarefa (uma por linha)
+                    </p>
+                </div>
+            </div>
+            <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+                <button onclick="closeModal('multiTaskModal')"
+                    class="btn-touch-target px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-200 rounded-xl transition-colors">Cancelar</button>
+                <button onclick="addMultipleTasks()"
+                    class="btn-touch-target hero-gradient px-4 sm:px-5 py-2.5 text-sm font-semibold text-white hover:shadow-lg rounded-xl transition-all shadow-md flex items-center gap-2">
+                    <i data-lucide="plus" class="w-4 h-4"></i> Adicionar Tarefas
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Bulk Edit -->
+    <div id="bulkEditModal"
+        class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity modal-backdrop">
+        <div class="bg-surface rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform scale-95 transition-transform duration-200 modal-inner">
+            <div class="p-5 sm:p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 class="font-semibold text-base sm:text-lg flex items-center gap-2">
+                    <i data-lucide="edit-3" class="w-5 h-5 text-primary"></i> Editar Tarefas Selecionadas
+                </h3>
+                <button onclick="closeModal('bulkEditModal')"
+                    class="btn-touch-target text-slate-400 hover:text-slate-600 transition-colors p-2 rounded-lg"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div class="p-5 sm:p-6 flex flex-col gap-4">
+                <p class="text-sm text-slate-600"><span id="bulkEditCount">0</span> tarefas selecionadas</p>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                        <i data-lucide="calendar" class="w-4 h-4 inline mr-1"></i>Nova Data (deixe vazio para não alterar)
+                    </label>
+                    <input type="date" id="bulkEditDate"
+                        class="w-full border border-slate-200 rounded-xl p-3 text-base sm:text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                        <i data-lucide="tag" class="w-4 h-4 inline mr-1"></i>Tags (separadas por espaço, deixe vazio para não alterar)
+                    </label>
+                    <input type="text" id="bulkEditTags"
+                        class="w-full border border-slate-200 rounded-xl p-3 text-base sm:text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
+                        placeholder="#Foco #Trabalho">
+                </div>
+                <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
+                    <input type="checkbox" id="bulkEditComplete" class="w-5 h-5 rounded border-slate-300 text-primary focus:ring-primary">
+                    <label for="bulkEditComplete" class="text-sm text-slate-700">Marcar como concluídas</label>
+                </div>
+            </div>
+            <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+                <button onclick="closeModal('bulkEditModal')"
+                    class="btn-touch-target px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-200 rounded-xl transition-colors">Cancelar</button>
+                <button onclick="applyBulkEdit()"
+                    class="btn-touch-target hero-gradient px-4 sm:px-5 py-2.5 text-sm font-semibold text-white hover:shadow-lg rounded-xl transition-all shadow-md flex items-center gap-2">
+                    <i data-lucide="check" class="w-4 h-4"></i> Aplicar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Bulk Tags -->
+    <div id="bulkTagModal"
+        class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity modal-backdrop">
+        <div class="bg-surface rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform scale-95 transition-transform duration-200 modal-inner">
+            <div class="p-5 sm:p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 class="font-semibold text-base sm:text-lg flex items-center gap-2">
+                    <i data-lucide="tag" class="w-5 h-5 text-primary"></i> Editar Tags em Massa
+                </h3>
+                <button onclick="closeModal('bulkTagModal')"
+                    class="btn-touch-target text-slate-400 hover:text-slate-600 transition-colors p-2 rounded-lg"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div class="p-5 sm:p-6 flex flex-col gap-4">
+                <p class="text-sm text-slate-600"><span id="bulkTagCount">0</span> tarefas selecionadas</p>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Ação</label>
+                    <select id="bulkTagAction"
+                        class="w-full border border-slate-200 rounded-xl p-3 text-base sm:text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all">
+                        <option value="add">Adicionar tags</option>
+                        <option value="remove">Remover tags</option>
+                        <option value="replace">Substituir todas as tags</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                        <i data-lucide="tag" class="w-4 h-4 inline mr-1"></i>Tags (separadas por espaço)
+                    </label>
+                    <input type="text" id="bulkTagInput"
+                        class="w-full border border-slate-200 rounded-xl p-3 text-base sm:text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
+                        placeholder="#Foco #Trabalho">
+                </div>
+            </div>
+            <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+                <button onclick="closeModal('bulkTagModal')"
+                    class="btn-touch-target px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-200 rounded-xl transition-colors">Cancelar</button>
+                <button onclick="applyBulkTags()"
+                    class="btn-touch-target hero-gradient px-4 sm:px-5 py-2.5 text-sm font-semibold text-white hover:shadow-lg rounded-xl transition-all shadow-md flex items-center gap-2">
+                    <i data-lucide="check" class="w-4 h-4"></i> Aplicar
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal de Importação -->
     <div id="importModal"
-        class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity">
+        class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity modal-backdrop">
         <div
-            class="bg-surface rounded-xl shadow-xl w-full max-w-2xl overflow-hidden transform scale-95 transition-transform duration-200">
-            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                <h3 class="font-semibold text-lg flex items-center gap-2"><i data-lucide="download" class="w-5 h-5"></i>
+            class="bg-surface rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden transform scale-95 transition-transform duration-200 modal-inner">
+            <div class="p-5 sm:p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 class="font-semibold text-base sm:text-lg flex items-center gap-2"><i data-lucide="download" class="w-5 h-5"></i>
                     Importar do TickTick</h3>
                 <button onclick="closeModal('importModal')"
-                    class="text-slate-400 hover:text-slate-600 transition-colors"><i data-lucide="x"
+                    class="btn-touch-target text-slate-400 hover:text-slate-600 transition-colors p-2 rounded-lg"><i data-lucide="x"
                         class="w-5 h-5"></i></button>
             </div>
-            <div class="p-6">
-                <p class="text-sm text-slate-600 mb-3">Cole o seu planeamento no formato: <code
+            <div class="p-5 sm:p-6">
+                <p class="text-xs sm:text-sm text-slate-600 mb-3">Cole o seu planeamento no formato: <code
                         class="bg-slate-100 px-1 py-0.5 rounded text-xs">YYYY-MM-DD HH:MM-HH:MM Título #Tag</code></p>
-                <textarea id="importTextarea" rows="10"
-                    class="w-full border border-slate-300 rounded-lg p-3 text-sm font-mono focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
+                <textarea id="importTextarea" rows="8"
+                    class="w-full border border-slate-300 rounded-xl p-3 sm:p-4 text-sm font-mono focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
                     placeholder="Ex:\n2025-11-20 13:30-14:30 🎯 Concurso — Bloco 1 #Concurso #DeepWork"></textarea>
             </div>
             <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
                 <button onclick="closeModal('importModal')"
-                    class="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-200 rounded-lg transition-colors">Cancelar</button>
+                    class="btn-touch-target px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-200 rounded-xl transition-colors">Cancelar</button>
                 <button onclick="executeImport()"
-                    class="px-4 py-2 text-sm font-medium bg-primary text-white hover:bg-blue-700 rounded-lg transition-colors shadow-sm">Processar
+                    class="btn-touch-target px-4 py-2.5 text-sm font-medium bg-primary text-white hover:bg-blue-700 rounded-xl transition-colors shadow-sm flex items-center gap-2">Processar
                     Importação</button>
             </div>
         </div>
@@ -628,28 +1159,28 @@
 
     <!-- Modal de Exportação -->
     <div id="exportModal"
-        class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity">
+        class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity modal-backdrop">
         <div
-            class="bg-surface rounded-xl shadow-xl w-full max-w-2xl overflow-hidden transform scale-95 transition-transform duration-200">
-            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                <h3 class="font-semibold text-lg flex items-center gap-2"><i data-lucide="upload" class="w-5 h-5"></i>
+            class="bg-surface rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden transform scale-95 transition-transform duration-200 modal-inner">
+            <div class="p-5 sm:p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 class="font-semibold text-base sm:text-lg flex items-center gap-2"><i data-lucide="upload" class="w-5 h-5"></i>
                     Exportar para TickTick</h3>
                 <button onclick="closeModal('exportModal')"
-                    class="text-slate-400 hover:text-slate-600 transition-colors"><i data-lucide="x"
+                    class="btn-touch-target text-slate-400 hover:text-slate-600 transition-colors p-2 rounded-lg"><i data-lucide="x"
                         class="w-5 h-5"></i></button>
             </div>
-            <div class="p-6">
-                <p class="text-sm text-slate-600 mb-3">Copie o texto abaixo e cole na caixa de entrada do TickTick
+            <div class="p-5 sm:p-6">
+                <p class="text-xs sm:text-sm text-slate-600 mb-3">Copie o texto abaixo e cole na caixa de entrada do TickTick
                     (Adição em Lote).</p>
-                <textarea id="exportTextarea" rows="10" readonly
-                    class="w-full border border-slate-300 rounded-lg p-3 text-sm font-mono bg-slate-50 focus:outline-none"></textarea>
+                <textarea id="exportTextarea" rows="8" readonly
+                    class="w-full border border-slate-300 rounded-xl p-3 sm:p-4 text-sm font-mono bg-slate-50 focus:outline-none"></textarea>
             </div>
             <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
                 <button onclick="closeModal('exportModal')"
-                    class="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-200 rounded-lg transition-colors">Fechar</button>
+                    class="btn-touch-target px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-200 rounded-xl transition-colors">Fechar</button>
                 <button onclick="copyExport()"
-                    class="px-4 py-2 text-sm font-medium bg-primary text-white hover:bg-blue-700 rounded-lg transition-colors shadow-sm flex items-center gap-2">
-                    <i data-lucide="copy" class="w-4 h-4"></i> Copiar Texto
+                    class="btn-touch-target px-4 py-2.5 text-sm font-medium bg-primary text-white hover:bg-blue-700 rounded-xl transition-colors shadow-sm flex items-center gap-2">
+                    <i data-lucide="copy" class="w-4 h-4"></i> Copiar
                 </button>
             </div>
         </div>
@@ -657,25 +1188,25 @@
 
     <!-- Modal de Análise Detalhada -->
     <div id="analysisModal"
-        class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity">
+        class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity modal-backdrop">
         <div
-            class="bg-surface rounded-xl shadow-xl w-full max-w-4xl overflow-hidden transform scale-95 transition-transform duration-200 max-h-[92vh] flex flex-col">
-            <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                <h3 class="font-semibold text-lg flex items-center gap-2"><i data-lucide="pie-chart"
-                        class="w-5 h-5 text-primary"></i> Relatório de Desempenho</h3>
+            class="bg-surface rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden transform scale-95 transition-transform duration-200 max-h-[95vh] sm:max-h-[92vh] flex flex-col modal-inner analysis-modal-content">
+            <div class="p-4 sm:p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50 flex-shrink-0">
+                <h3 class="font-semibold text-base sm:text-lg flex items-center gap-2"><i data-lucide="pie-chart"
+                        class="w-5 h-5 text-primary"></i> Relatório</h3>
                 <button onclick="closeModal('analysisModal')"
-                    class="text-slate-400 hover:text-slate-600 transition-colors"><i data-lucide="x"
+                    class="btn-touch-target text-slate-400 hover:text-slate-600 transition-colors p-2 rounded-lg"><i data-lucide="x"
                         class="w-5 h-5"></i></button>
             </div>
 
             <!-- Abas -->
-            <div class="flex border-b border-slate-200 bg-white px-5">
+            <div class="flex border-b border-slate-200 bg-white px-3 sm:px-5 flex-shrink-0 analysis-tabs">
                 <button onclick="switchAnalysisTab('overview')" id="tab-overview"
-                    class="px-4 py-3 text-sm font-semibold border-b-2 border-primary text-primary transition-colors">Visão Geral</button>
+                    class="px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold border-b-2 border-primary text-primary transition-colors whitespace-nowrap">Visão Geral</button>
                 <button onclick="switchAnalysisTab('charts')" id="tab-charts"
-                    class="px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition-colors">Gráficos</button>
+                    class="px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition-colors whitespace-nowrap">Gráficos</button>
                 <button onclick="switchAnalysisTab('ai')" id="tab-ai"
-                    class="px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition-colors flex items-center gap-1.5">
+                    class="px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition-colors flex items-center gap-1.5 whitespace-nowrap">
                     <i data-lucide="sparkles" class="w-4 h-4"></i> IA Coach</button>
             </div>
 
@@ -839,21 +1370,21 @@
 
     <!-- Modal de Tarefa (Adicionar/Editar) -->
     <div id="taskModal"
-        class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity">
+        class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity modal-backdrop">
         <div
-            class="bg-surface rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform scale-95 transition-transform duration-200 border border-slate-200/50">
-            <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-gradient-to-r from-slate-50 to-white">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 hero-gradient rounded-xl flex items-center justify-center shadow-md">
+            class="bg-surface rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform scale-95 transition-transform duration-200 border border-slate-200/50 modal-inner">
+            <div class="p-4 sm:p-5 border-b border-slate-100 flex justify-between items-center bg-gradient-to-r from-slate-50 to-white">
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <div class="w-9 h-9 sm:w-10 sm:h-10 hero-gradient rounded-xl flex items-center justify-center shadow-md">
                         <i data-lucide="plus-square" class="text-white w-5 h-5"></i>
                     </div>
-                    <h3 id="taskModalTitle" class="font-bold text-lg text-slate-800">Novo Bloco de Foco</h3>
+                    <h3 id="taskModalTitle" class="font-bold text-base sm:text-lg text-slate-800">Novo Bloco</h3>
                 </div>
                 <button onclick="closeModal('taskModal')"
-                    class="text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors p-2 rounded-lg"><i data-lucide="x"
+                    class="btn-touch-target text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors p-2 rounded-lg"><i data-lucide="x"
                         class="w-5 h-5"></i></button>
             </div>
-            <div class="p-6 flex flex-col gap-5">
+            <div class="p-5 sm:p-6 flex flex-col gap-4 sm:gap-5 max-h-[60vh] overflow-y-auto">
                 <input type="hidden" id="taskId">
 
                 <div>
@@ -861,119 +1392,110 @@
                         <i data-lucide="type" class="w-4 h-4 inline mr-1"></i>Título
                     </label>
                     <input type="text" id="taskTitle"
-                        class="w-full border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
+                        class="w-full border border-slate-200 rounded-xl p-3 text-base sm:text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
                         placeholder="Ex: 📖 Devocional">
                 </div>
 
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-2 gap-3 sm:gap-4">
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 mb-2">
                             <i data-lucide="calendar" class="w-4 h-4 inline mr-1"></i>Data
                         </label>
                         <input type="date" id="taskDate"
-                            class="w-full border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all">
+                            class="w-full border border-slate-200 rounded-xl p-3 text-base sm:text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all">
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 mb-2">
                             <i data-lucide="tag" class="w-4 h-4 inline mr-1"></i>Tags
                         </label>
                         <input type="text" id="taskTags"
-                            class="w-full border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
-                            placeholder="#Teologia #Foco">
+                            class="w-full border border-slate-200 rounded-xl p-3 text-base sm:text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
+                            placeholder="#Teologia">
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-2 gap-3 sm:gap-4">
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 mb-2">
                             <i data-lucide="clock" class="w-4 h-4 inline mr-1"></i>Início
                         </label>
                         <input type="time" id="taskStartTime"
-                            class="w-full border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all">
+                            class="w-full border border-slate-200 rounded-xl p-3 text-base sm:text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all">
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 mb-2">
                             <i data-lucide="clock-4" class="w-4 h-4 inline mr-1"></i>Fim
                         </label>
                         <input type="time" id="taskEndTime"
-                            class="w-full border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all">
+                            class="w-full border border-slate-200 rounded-xl p-3 text-base sm:text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all">
                     </div>
                 </div>
             </div>
             <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
                 <button onclick="closeModal('taskModal')"
-                    class="px-5 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-200 rounded-xl transition-colors">Cancelar</button>
+                    class="btn-touch-target px-4 sm:px-5 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-200 rounded-xl transition-colors">Cancelar</button>
                 <button onclick="saveTask()"
-                    class="hero-gradient px-5 py-2.5 text-sm font-semibold text-white hover:shadow-lg rounded-xl transition-all shadow-md flex items-center gap-2">
+                    class="btn-touch-target hero-gradient px-4 sm:px-5 py-2.5 text-sm font-semibold text-white hover:shadow-lg rounded-xl transition-all shadow-md flex items-center gap-2">
                     <i data-lucide="save" class="w-4 h-4"></i> Guardar
                 </button>
-            </div>
-        </div>
-    </div>
-            </div>
-            <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
-                <button onclick="closeModal('taskModal')"
-                    class="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-200 rounded-lg transition-colors">Cancelar</button>
-                <button onclick="saveTask()"
-                    class="px-4 py-2 text-sm font-medium bg-primary text-white hover:bg-blue-700 rounded-lg transition-colors shadow-sm">Guardar</button>
             </div>
         </div>
     </div>
 
     <!-- Modal de Configurações -->
     <div id="settingsModal"
-        class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity">
+        class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity modal-backdrop">
         <div
-            class="bg-surface rounded-xl shadow-xl w-full max-w-md overflow-hidden transform scale-95 transition-transform duration-200">
-            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                <h3 class="font-semibold text-lg flex items-center gap-2"><i data-lucide="settings" class="w-5 h-5"></i>
+            class="bg-surface rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform scale-95 transition-transform duration-200 modal-inner">
+            <div class="p-5 sm:p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 class="font-semibold text-base sm:text-lg flex items-center gap-2"><i data-lucide="settings" class="w-5 h-5"></i>
                     Configurações</h3>
                 <button onclick="closeModal('settingsModal')"
-                    class="text-slate-400 hover:text-slate-600 transition-colors"><i data-lucide="x"
+                    class="btn-touch-target text-slate-400 hover:text-slate-600 transition-colors p-2 rounded-lg"><i data-lucide="x"
                         class="w-5 h-5"></i></button>
             </div>
-            <div class="p-6 flex flex-col gap-4">
+            <div class="p-5 sm:p-6 flex flex-col gap-4 max-h-[60vh] overflow-y-auto">
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">URL do Google Apps Script</label>
                     <input type="url" id="settingsAppsScriptUrl"
-                        class="w-full border border-slate-300 rounded-lg p-2.5 text-sm font-mono focus:ring-2 focus:ring-primary focus:border-primary outline-none"
+                        class="w-full border border-slate-300 rounded-xl p-3 text-sm font-mono focus:ring-2 focus:ring-primary focus:border-primary outline-none"
                         placeholder="https://script.google.com/macros/s/.../exec">
-                    <p class="text-xs text-slate-400 mt-1">Cole aqui a URL do seu Web App (Apps Script). Sem ela, apenas o salvamento local funciona.</p>
+                    <p class="text-xs text-slate-400 mt-1">Cole aqui a URL do seu Web App (Apps Script).</p>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Chave API Gemini</label>
                     <input type="password" id="settingsGeminiKey"
-                        class="w-full border border-slate-300 rounded-lg p-2.5 text-sm font-mono focus:ring-2 focus:ring-primary focus:border-primary outline-none"
+                        class="w-full border border-slate-300 rounded-xl p-3 text-sm font-mono focus:ring-2 focus:ring-primary focus:border-primary outline-none"
                         placeholder="AIza...">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Chave API OpenAI</label>
                     <input type="password" id="settingsOpenAIKey"
-                        class="w-full border border-slate-300 rounded-lg p-2.5 text-sm font-mono focus:ring-2 focus:ring-primary focus:border-primary outline-none"
+                        class="w-full border border-slate-300 rounded-xl p-3 text-sm font-mono focus:ring-2 focus:ring-primary focus:border-primary outline-none"
                         placeholder="sk-...">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Provedor de IA Padrão</label>
                     <select id="settingsAIProvider"
-                        class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none bg-white">
+                        class="w-full border border-slate-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none bg-white">
                         <option value="gemini">Google Gemini (Gratuito)</option>
                         <option value="openai">OpenAI (GPT-4o mini)</option>
                     </select>
-                    <p class="text-xs text-slate-400 mt-1">Escolha qual IA usar para o relatório de produtividade.</p>
+                    <p class="text-xs text-slate-400 mt-1">Escolha qual IA usar para o relatório.</p>
                 </div>
             </div>
             <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
                 <button onclick="closeModal('settingsModal')"
-                    class="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-200 rounded-lg transition-colors">Cancelar</button>
+                    class="btn-touch-target px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-200 rounded-xl transition-colors">Cancelar</button>
                 <button onclick="saveSettings()"
-                    class="px-4 py-2 text-sm font-medium bg-primary text-white hover:bg-blue-700 rounded-lg transition-colors shadow-sm">Guardar</button>
+                    class="btn-touch-target px-4 py-2.5 text-sm font-medium bg-primary text-white hover:bg-blue-700 rounded-xl transition-colors shadow-sm">Guardar</button>
             </div>
         </div>
     </div>
 
     <!-- Toast Notification -->
     <div id="toast"
-        class="fixed bottom-20 md:bottom-4 right-4 bg-slate-800/95 backdrop-blur-md text-white px-5 py-3 rounded-xl shadow-2xl transform translate-y-20 opacity-0 transition-all duration-300 z-50 flex items-center gap-3 border border-slate-700/50">
+        class="fixed bottom-20 md:bottom-4 right-4 left-4 md:left-auto bg-slate-800/95 backdrop-blur-md text-white px-4 sm:px-5 py-3 rounded-xl shadow-2xl transform translate-y-20 opacity-0 transition-all duration-300 z-50 flex items-center gap-3 border border-slate-700/50 toast-mobile-adjust">
         <div class="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center flex-shrink-0">
             <i data-lucide="bell" class="w-4 h-4 text-primary"></i>
         </div>
@@ -987,12 +1509,27 @@
 
         // Estado Global
         let tasks = [];
+        let lists = [];
         let sortableInstances = [];
         let currentView = 'list'; // 'list' ou 'calendar'
+        let selectMode = false;
+        let selectedTasks = new Set();
 
         // Persistência — Configuração
         const STORAGE_KEY = 'titan_planner_tasks';
+        const LISTS_STORAGE_KEY = 'titan_planner_lists';
         const SETTINGS_KEY = 'titan_planner_settings';
+
+        const LIST_COLORS = {
+            indigo: { bg: 'bg-indigo-500', hex: '#6366f1' },
+            emerald: { bg: 'bg-emerald-500', hex: '#10b981' },
+            orange: { bg: 'bg-orange-500', hex: '#f97316' },
+            violet: { bg: 'bg-violet-500', hex: '#8b5cf6' },
+            cyan: { bg: 'bg-cyan-500', hex: '#06b6d4' },
+            pink: { bg: 'bg-pink-500', hex: '#ec4899' },
+            amber: { bg: 'bg-amber-500', hex: '#f59e0b' },
+            slate: { bg: 'bg-slate-500', hex: '#64748b' }
+        };
         let APPS_SCRIPT_URL = '';
         let GEMINI_API_KEY = '';
         let OPENAI_API_KEY = '';
@@ -1121,6 +1658,252 @@
             } else {
                 showToast('❌ Erro ao salvar localmente.');
             }
+        }
+
+        // ==========================================
+        // LISTAS DE TAREFAS
+        // ==========================================
+        function saveListsToLocal() {
+            try {
+                localStorage.setItem(LISTS_STORAGE_KEY, JSON.stringify(lists));
+                return true;
+            } catch (e) {
+                console.error('Erro ao salvar listas:', e);
+                return false;
+            }
+        }
+
+        function loadListsFromLocal() {
+            try {
+                const data = localStorage.getItem(LISTS_STORAGE_KEY);
+                if (data) {
+                    lists = JSON.parse(data);
+                    return true;
+                }
+            } catch (e) {
+                console.error('Erro ao carregar listas:', e);
+            }
+            return false;
+        }
+
+        function renderSidebar() {
+            const container = document.getElementById('listsContainer');
+            
+            if (lists.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8 px-4">
+                        <div class="w-16 h-16 mx-auto mb-4 bg-slate-100 rounded-2xl flex items-center justify-center">
+                            <i data-lucide="folder" class="w-8 h-8 text-slate-400"></i>
+                        </div>
+                        <p class="text-sm text-slate-500 mb-4">Nenhuma lista criada</p>
+                        <p class="text-xs text-slate-400">Crie listas para organizar suas tarefas</p>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            let html = '';
+            lists.forEach(list => {
+                const taskCount = tasks.filter(t => t.listId === list.id).length;
+                const colorClass = LIST_COLORS[list.color]?.bg || 'bg-indigo-500';
+                const colorHex = LIST_COLORS[list.color]?.hex || '#6366f1';
+                
+                html += `
+                    <div class="sidebar-list-item" onclick="openMultiTaskModal('${list.id}')">
+                        <div class="sidebar-list-color ${colorClass}" style="background-color: ${colorHex}"></div>
+                        <div class="sidebar-list-info">
+                            <div class="sidebar-list-name">${list.name}</div>
+                            <div class="sidebar-list-count">${taskCount} tarefa${taskCount !== 1 ? 's' : ''}</div>
+                        </div>
+                        <div class="sidebar-list-actions">
+                            <button onclick="event.stopPropagation(); openListModal('${list.id}')" class="btn-touch-target p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors">
+                                <i data-lucide="edit-2" class="w-4 h-4"></i>
+                            </button>
+                            <button onclick="event.stopPropagation(); deleteList('${list.id}')" class="btn-touch-target p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+            lucide.createIcons();
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('sidebar-open');
+            overlay.classList.toggle('hidden');
+        }
+
+        function openListModal(id = null) {
+            const modal = document.getElementById('listModal');
+            const titleEl = document.getElementById('listModalTitle');
+            document.getElementById('listId').value = '';
+            document.getElementById('listName').value = '';
+            document.getElementById('listColor').value = 'indigo';
+            
+            document.querySelectorAll('.list-color-btn').forEach(btn => {
+                btn.classList.remove('ring-4', 'ring-primary');
+            });
+            document.querySelector('.list-color-btn[data-color="indigo"]').classList.add('ring-4', 'ring-primary');
+
+            if (id) {
+                const list = lists.find(l => l.id === id);
+                if (list) {
+                    titleEl.innerHTML = '<i data-lucide="edit" class="w-5 h-5 text-primary"></i> Editar Lista';
+                    document.getElementById('listId').value = list.id;
+                    document.getElementById('listName').value = list.name;
+                    document.getElementById('listColor').value = list.color;
+                    document.querySelectorAll('.list-color-btn').forEach(btn => {
+                        btn.classList.remove('ring-4', 'ring-primary');
+                        if (btn.dataset.color === list.color) {
+                            btn.classList.add('ring-4', 'ring-primary');
+                        }
+                    });
+                }
+            } else {
+                titleEl.innerHTML = '<i data-lucide="folder-plus" class="w-5 h-5 text-primary"></i> Nova Lista';
+            }
+
+            openModal('listModal');
+        }
+
+        function selectListColor(color) {
+            document.getElementById('listColor').value = color;
+            document.querySelectorAll('.list-color-btn').forEach(btn => {
+                btn.classList.remove('ring-4', 'ring-primary');
+                if (btn.dataset.color === color) {
+                    btn.classList.add('ring-4', 'ring-primary');
+                }
+            });
+        }
+
+        function saveList() {
+            const id = document.getElementById('listId').value;
+            const name = document.getElementById('listName').value.trim();
+            const color = document.getElementById('listColor').value;
+
+            if (!name) {
+                alert('Por favor, insira um nome para a lista.');
+                return;
+            }
+
+            if (id) {
+                const list = lists.find(l => l.id === id);
+                if (list) {
+                    list.name = name;
+                    list.color = color;
+                }
+                showToast('Lista atualizada.');
+            } else {
+                lists.push({
+                    id: Date.now().toString(),
+                    name,
+                    color,
+                    createdAt: new Date().toISOString()
+                });
+                showToast('Lista criada.');
+            }
+
+            saveListsToLocal();
+            renderSidebar();
+            closeModal('listModal');
+        }
+
+        function deleteList(id) {
+            if (confirm('Deseja eliminar esta lista? As tarefas não serão eliminadas.')) {
+                lists = lists.filter(l => l.id !== id);
+                saveListsToLocal();
+                renderSidebar();
+                showToast('Lista eliminada.');
+            }
+        }
+
+        function openMultiTaskModal(listId) {
+            const list = lists.find(l => l.id === listId);
+            if (!list) return;
+
+            const colorClass = LIST_COLORS[list.color]?.bg || 'bg-indigo-500';
+            const colorHex = LIST_COLORS[list.color]?.hex || '#6366f1';
+            
+            document.getElementById('multiTaskListColor').className = `w-10 h-10 ${colorClass} rounded-xl flex items-center justify-center`;
+            document.getElementById('multiTaskListColor').style.backgroundColor = colorHex;
+            document.getElementById('multiTaskListName').textContent = list.name;
+            document.getElementById('multiTaskListId')?.remove();
+            
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.id = 'multiTaskListId';
+            input.value = listId;
+            document.getElementById('multiTaskModal').querySelector('.p-5\\!sm\\:p-6, .p-5').appendChild(input);
+            
+            document.getElementById('multiTaskDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('multiTaskTags').value = '';
+            document.getElementById('multiTaskTextarea').value = '';
+            
+            toggleSidebar();
+            openModal('multiTaskModal');
+        }
+
+        function addMultipleTasks() {
+            const listId = document.getElementById('multiTaskListId')?.value;
+            const date = document.getElementById('multiTaskDate').value;
+            const tagsInput = document.getElementById('multiTaskTags').value.trim();
+            const text = document.getElementById('multiTaskTextarea').value.trim();
+
+            if (!date) {
+                alert('Por favor, selecione uma data.');
+                return;
+            }
+
+            if (!text) {
+                alert('Por favor, insira pelo menos uma tarefa.');
+                return;
+            }
+
+            const lines = text.split('\n');
+            const tags = tagsInput ? tagsInput.split(/\s+/).map(t => t.startsWith('#') ? t : `#${t}`) : [];
+            let added = 0;
+
+            lines.forEach(line => {
+                line = line.trim();
+                if (!line) return;
+
+                const regex = /^(\d{2}:\d{2})-(\d{2}:\d{2})\s+(.+)$/;
+                const match = line.match(regex);
+
+                if (match) {
+                    const startTime = match[1];
+                    const endTime = match[2];
+                    const title = match[3].trim();
+
+                    tasks.push({
+                        id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
+                        date,
+                        startTime,
+                        endTime,
+                        title,
+                        tags: [...tags],
+                        completed: false,
+                        listId: listId || null
+                    });
+                    added++;
+                }
+            });
+
+            if (added > 0) {
+                onDataMutated();
+                renderApp();
+                renderSidebar();
+                showToast(`${added} tarefa${added !== 1 ? 's' : ''} adicionada${added === 1 ? '' : 's'}.`);
+            } else {
+                showToast('Nenhuma tarefa válida encontrada. Use o formato: HH:MM-HH:MM Título');
+            }
+
+            closeModal('multiTaskModal');
         }
 
         // ==========================================
@@ -1271,6 +2054,7 @@
         // ==========================================
         function onDataMutated() {
             saveToLocal(); // sempre salva local
+            saveListsToLocal(); // salvar listas também
             if (autoSaveEnabled) {
                 scheduleAutoSave();
             }
@@ -1339,7 +2123,9 @@
         // Core Functions
         function initApp() {
             applySettings();
+            loadListsFromLocal();
             loadFromLocal();
+            renderSidebar();
             renderApp();
         }
 
@@ -1984,6 +2770,174 @@ ${summary}
         }
 
         // ==========================================
+        // ==========================================
+        // SELEÇÃO MÚLTIPLA
+        // ==========================================
+        function toggleSelectMode() {
+            selectMode = !selectMode;
+            selectedTasks.clear();
+            
+            const btn = document.getElementById('btn-select-mode');
+            const bulkBar = document.getElementById('bulkActionsBar');
+            
+            if (selectMode) {
+                btn.className = 'btn-touch-target px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg bg-primary text-white shadow-sm transition-all flex items-center gap-1.5 sm:gap-2';
+                btn.innerHTML = '<i data-lucide="x" class="w-4 h-4"></i> Cancelar';
+                bulkBar.classList.remove('hidden');
+            } else {
+                btn.className = 'btn-touch-target px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg text-slate-500 hover:text-primary hover:bg-primary/5 transition-all flex items-center gap-1.5 sm:gap-2 border border-slate-200';
+                btn.innerHTML = '<i data-lucide="check-square" class="w-4 h-4"></i> <span class="hidden sm:inline">Selecionar</span>';
+                bulkBar.classList.add('hidden');
+            }
+            
+            updateSelectedCount();
+            renderApp();
+            lucide.createIcons();
+        }
+
+        function updateSelectedCount() {
+            document.getElementById('selectedCount').textContent = `${selectedTasks.size} selecionada${selectedTasks.size !== 1 ? 's' : ''}`;
+        }
+
+        function toggleTaskSelection(taskId, event) {
+            if (!selectMode) return;
+            
+            event.stopPropagation();
+            
+            if (selectedTasks.has(taskId)) {
+                selectedTasks.delete(taskId);
+            } else {
+                selectedTasks.add(taskId);
+            }
+            
+            updateSelectedCount();
+            renderApp();
+        }
+
+        function selectAllTasks() {
+            tasks.forEach(t => selectedTasks.add(t.id));
+            updateSelectedCount();
+            renderApp();
+        }
+
+        function deselectAllTasks() {
+            selectedTasks.clear();
+            updateSelectedCount();
+            renderApp();
+        }
+
+        function openBulkEditModal() {
+            if (selectedTasks.size === 0) {
+                showToast('Selecione pelo menos uma tarefa.');
+                return;
+            }
+            document.getElementById('bulkEditCount').textContent = selectedTasks.size;
+            document.getElementById('bulkEditDate').value = '';
+            document.getElementById('bulkEditTags').value = '';
+            document.getElementById('bulkEditComplete').checked = false;
+            openModal('bulkEditModal');
+        }
+
+        function openBulkTagModal() {
+            if (selectedTasks.size === 0) {
+                showToast('Selecione pelo menos uma tarefa.');
+                return;
+            }
+            document.getElementById('bulkTagCount').textContent = selectedTasks.size;
+            document.getElementById('bulkTagAction').value = 'add';
+            document.getElementById('bulkTagInput').value = '';
+            openModal('bulkTagModal');
+        }
+
+        function applyBulkEdit() {
+            const date = document.getElementById('bulkEditDate').value;
+            const tags = document.getElementById('bulkEditTags').value.trim();
+            const markComplete = document.getElementById('bulkEditComplete').checked;
+            
+            selectedTasks.forEach(id => {
+                const task = tasks.find(t => t.id === id);
+                if (task) {
+                    if (date) task.date = date;
+                    if (markComplete) task.completed = true;
+                    if (tags) {
+                        task.tags = tags.split(/\s+/).map(t => t.startsWith('#') ? t : `#${t}`);
+                    }
+                }
+            });
+            
+            onDataMutated();
+            showToast(`${selectedTasks.size} tarefa${selectedTasks.size !== 1 ? 's' : ''} atualizada${selectedTasks.size === 1 ? '' : 's'}.`);
+            deselectAllTasks();
+            closeModal('bulkEditModal');
+            toggleSelectMode();
+        }
+
+        function applyBulkTags() {
+            const action = document.getElementById('bulkTagAction').value;
+            const tagsInput = document.getElementById('bulkTagInput').value.trim();
+            
+            if (!tagsInput) {
+                showToast('Insira pelo menos uma tag.');
+                return;
+            }
+            
+            const tags = tagsInput.split(/\s+/).map(t => t.startsWith('#') ? t : `#${t}`);
+            
+            selectedTasks.forEach(id => {
+                const task = tasks.find(t => t.id === id);
+                if (task) {
+                    if (action === 'add') {
+                        tags.forEach(tag => {
+                            if (!task.tags.includes(tag)) task.tags.push(tag);
+                        });
+                    } else if (action === 'remove') {
+                        task.tags = task.tags.filter(tag => !tags.includes(tag));
+                    } else if (action === 'replace') {
+                        task.tags = [...tags];
+                    }
+                }
+            });
+            
+            onDataMutated();
+            showToast(`Tags atualizadas em ${selectedTasks.size} tarefa${selectedTasks.size !== 1 ? 's' : ''}.`);
+            deselectAllTasks();
+            closeModal('bulkTagModal');
+            toggleSelectMode();
+        }
+
+        function bulkCompleteTasks() {
+            if (selectedTasks.size === 0) {
+                showToast('Selecione pelo menos uma tarefa.');
+                return;
+            }
+            
+            selectedTasks.forEach(id => {
+                const task = tasks.find(t => t.id === id);
+                if (task) task.completed = true;
+            });
+            
+            onDataMutated();
+            showToast(`${selectedTasks.size} tarefa${selectedTasks.size !== 1 ? 's' : ''} concluída${selectedTasks.size === 1 ? '' : 's'}.`);
+            deselectAllTasks();
+            toggleSelectMode();
+        }
+
+        function bulkDeleteTasks() {
+            if (selectedTasks.size === 0) {
+                showToast('Selecione pelo menos uma tarefa.');
+                return;
+            }
+            
+            if (confirm(`Deseja eliminar ${selectedTasks.size} tarefa${selectedTasks.size !== 1 ? 's' : ''}?`)) {
+                tasks = tasks.filter(t => !selectedTasks.has(t.id));
+                onDataMutated();
+                showToast(`${selectedTasks.size} tarefa${selectedTasks.size !== 1 ? 's' : ''} eliminada${selectedTasks.size === 1 ? '' : 's'}.`);
+                deselectAllTasks();
+                toggleSelectMode();
+            }
+        }
+
+        // ==========================================
         // RENDER: VISTA EM LISTA
         // ==========================================
         function renderAgenda() {
@@ -2006,7 +2960,7 @@ ${summary}
                 dayBlock.appendChild(header);
 
                 const taskList = document.createElement('div');
-                taskList.className = 'flex flex-col gap-3 task-list-container min-h-[60px]';
+                taskList.className = `flex flex-col gap-3 task-list-container min-h-[60px] ${selectMode ? 'select-mode-active' : ''}`;
                 taskList.dataset.date = dateStr;
 
                 groupedTasks[dateStr].forEach(task => {
@@ -2016,7 +2970,9 @@ ${summary}
                 dayBlock.appendChild(taskList);
                 container.appendChild(dayBlock);
 
-                setupSortable(taskList);
+                if (!selectMode) {
+                    setupSortable(taskList);
+                }
             });
         }
 
@@ -2049,7 +3005,7 @@ ${summary}
 
                 // Container de Tarefas da Coluna
                 const taskList = document.createElement('div');
-                taskList.className = 'p-3 flex flex-col gap-3 min-h-[150px] task-list-container';
+                taskList.className = `p-3 flex flex-col gap-3 min-h-[150px] task-list-container ${selectMode ? 'select-mode-active' : ''}`;
                 taskList.dataset.date = dateStr;
 
                 groupedTasks[dateStr].forEach(task => {
@@ -2059,7 +3015,9 @@ ${summary}
                 col.appendChild(taskList);
                 grid.appendChild(col);
 
-                setupSortable(taskList);
+                if (!selectMode) {
+                    setupSortable(taskList);
+                }
             });
         }
 
@@ -2068,15 +3026,34 @@ ${summary}
         // ==========================================
         function createListCard(task) {
             const el = document.createElement('div');
-            el.className = `task-card bg-surface border border-slate-200/80 rounded-xl p-4 flex items-center gap-4 transition-all ${task.completed ? 'completed bg-slate-50/50' : 'shadow-sm'}`;
+            const isSelected = selectedTasks.has(task.id);
+            el.className = `task-card bg-surface border border-slate-200/80 rounded-xl p-4 flex items-center gap-3 sm:gap-4 transition-all ${task.completed ? 'completed bg-slate-50/50' : 'shadow-sm'} ${isSelected ? 'ring-2 ring-primary ring-offset-2' : ''}`;
             el.dataset.id = task.id;
 
             const tagsHtml = task.tags.map(tag => `<span class="inline-block bg-slate-100 text-slate-600 text-[10px] px-2 py-0.5 rounded font-semibold border border-slate-200">${tag}</span>`).join(' ');
 
-            el.innerHTML = `
+            const checkbox = selectMode ? `
+                <div onclick="toggleTaskSelection('${task.id}', event)" class="task-checkbox ${isSelected ? 'checked' : ''}">
+                    ${isSelected ? '<i data-lucide="check" class="w-4 h-4"></i>' : ''}
+                </div>
+            ` : '';
+
+            const dragHandle = !selectMode ? `
                 <div class="cursor-grab text-slate-300 hover:text-slate-500 drag-handle hidden sm:flex flex-col items-center justify-center w-6 h-full">
                     <i data-lucide="grip-vertical" class="w-5 h-5"></i>
                 </div>
+            ` : '';
+
+            const actions = !selectMode ? `
+                <div class="task-actions sm:opacity-0 transition-opacity flex items-center gap-1 flex-shrink-0">
+                    <button onclick="editTask('${task.id}')" class="p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
+                    <button onclick="deleteTask('${task.id}')" class="p-2 text-slate-400 hover:text-danger hover:bg-danger/10 rounded-lg transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                </div>
+            ` : '';
+
+            el.innerHTML = `
+                ${dragHandle}
+                ${checkbox}
                 <button onclick="toggleTask('${task.id}')" class="flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${task.completed ? 'bg-success border-success text-white shadow-sm' : 'border-slate-300 hover:border-primary hover:scale-110 text-transparent'}">
                     <i data-lucide="check" class="w-3.5 h-3.5"></i>
                 </button>
@@ -2089,22 +3066,35 @@ ${summary}
                     <h4 class="task-title text-slate-800 font-semibold truncate">${task.title}</h4>
                     ${tagsHtml ? `<div class="mt-2 flex gap-1.5 flex-wrap">${tagsHtml}</div>` : ''}
                 </div>
-                <div class="task-actions sm:opacity-0 transition-opacity flex items-center gap-1 flex-shrink-0">
-                    <button onclick="editTask('${task.id}')" class="p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
-                    <button onclick="deleteTask('${task.id}')" class="p-2 text-slate-400 hover:text-danger hover:bg-danger/10 rounded-lg transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                </div>
+                ${actions}
             `;
             return el;
         }
 
         function createCalendarCard(task) {
             const el = document.createElement('div');
-            el.className = `task-card cursor-grab bg-white border ${task.completed ? 'border-success/30 bg-success/5' : 'border-slate-200/80 hover:border-primary/50'} rounded-xl p-3 shadow-sm flex flex-col gap-2 transition-all relative group`;
+            const isSelected = selectedTasks.has(task.id);
+            el.className = `task-card cursor-grab bg-white border ${task.completed ? 'border-success/30 bg-success/5' : 'border-slate-200/80 hover:border-primary/50'} rounded-xl p-3 shadow-sm flex flex-col gap-2 transition-all relative group ${isSelected ? 'ring-2 ring-primary ring-offset-2' : ''}`;
             el.dataset.id = task.id;
 
             const tagsHtml = task.tags.map(tag => `<span class="inline-block bg-slate-100 text-slate-600 text-[10px] px-1.5 py-0.5 rounded font-semibold border border-slate-200">${tag}</span>`).join(' ');
 
+            const checkbox = selectMode ? `
+                <div onclick="toggleTaskSelection('${task.id}', event)" class="task-checkbox ${isSelected ? 'checked' : ''}">
+                    ${isSelected ? '<i data-lucide="check" class="w-4 h-4"></i>' : ''}
+                </div>
+            ` : '';
+
+            const actions = !selectMode ? `
+                <!-- Overlay de Ações (Aparece no Hover) -->
+                <div class="absolute inset-0 bg-slate-900/5 backdrop-blur-[1px] opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center gap-2 pointer-events-none">
+                    <button onclick="editTask('${task.id}')" class="pointer-events-auto bg-white p-2 rounded-lg shadow-md text-slate-600 hover:text-primary hover:bg-primary/10 transition-colors"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
+                    <button onclick="deleteTask('${task.id}')" class="pointer-events-auto bg-white p-2 rounded-lg shadow-md text-slate-600 hover:text-danger hover:bg-danger/10 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                </div>
+            ` : '';
+
             el.innerHTML = `
+                ${checkbox}
                 <div class="flex justify-between items-start">
                     <span class="inline-flex items-center gap-1 text-[11px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded">
                         <i data-lucide="clock" class="w-3 h-3"></i> ${task.startTime} - ${task.endTime}
@@ -2115,12 +3105,7 @@ ${summary}
                 </div>
                 <h4 class="text-sm font-semibold text-slate-800 leading-tight pr-2 ${task.completed ? 'line-through opacity-60' : ''}">${task.title}</h4>
                 ${tagsHtml ? `<div class="flex flex-wrap gap-1">${tagsHtml}</div>` : ''}
-                
-                <!-- Overlay de Ações (Aparece no Hover) -->
-                <div class="absolute inset-0 bg-slate-900/5 backdrop-blur-[1px] opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center gap-2 pointer-events-none">
-                    <button onclick="editTask('${task.id}')" class="pointer-events-auto bg-white p-2 rounded-lg shadow-md text-slate-600 hover:text-primary hover:bg-primary/10 transition-colors"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
-                    <button onclick="deleteTask('${task.id}')" class="pointer-events-auto bg-white p-2 rounded-lg shadow-md text-slate-600 hover:text-danger hover:bg-danger/10 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                </div>
+                ${actions}
             `;
             return el;
         }
